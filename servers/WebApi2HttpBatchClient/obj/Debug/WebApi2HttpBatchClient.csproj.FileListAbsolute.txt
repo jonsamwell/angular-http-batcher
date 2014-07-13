@@ -1,0 +1,8 @@
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\bin\Debug\WebApi2HttpBatchClient.exe.config
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\obj\Debug\WebApi2HttpBatchClient.csprojResolveAssemblyReference.cache
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\bin\Debug\WebApi2HttpBatchClient.exe
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\bin\Debug\WebApi2HttpBatchClient.pdb
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\bin\Debug\System.Net.Http.Formatting.dll
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\bin\Debug\System.Net.Http.Formatting.xml
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\obj\Debug\WebApi2HttpBatchClient.exe
+Z:\Documents\Dev\github\angular-http-batcher\servers\WebApi2HttpBatchClient\obj\Debug\WebApi2HttpBatchClient.pdb
