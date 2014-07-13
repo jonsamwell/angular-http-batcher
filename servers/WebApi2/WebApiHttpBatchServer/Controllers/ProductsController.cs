@@ -10,7 +10,7 @@ using WebApiHttpBatchServer.Models;
 
 namespace WebApiHttpBatchServer.Controllers
 {
-    //[EnableCors("*", "*", "*")]
+    [EnableCors("*", "*", "*")]
     public class ProductsController : ApiController
     {
         private IEnumerable<Product> _products = new Product[] {

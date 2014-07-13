@@ -1,4 +1,5 @@
 angular.module(window.ahb.name).provider('httpBatchConfig', [
+
     function () {
         'use strict';
 
@@ -63,7 +64,7 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
                 if (url.indexOf(config.serviceUrl) > -1) {
                     break;
                 } else {
-                    config = undefined
+                    config = undefined;
                 }
             }
 
@@ -73,8 +74,8 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
         this.canBatchCall = function (url, method) {
             var config = this.getBatchConfig(url);
             return config !== undefined &&
-                   config.batchEndpointUrl !== url &&
-                   config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
+                config.batchEndpointUrl !== url &&
+                config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
         };
 
         this.calculateBoundary = function () {
