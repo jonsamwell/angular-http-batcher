@@ -12,7 +12,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 emptyString: '',
                 singleSpace: ' ',
                 forwardSlash: '/',
-                doubleDash: '--'
+                doubleDash: '--',
+                colon: ':'
             },
 
             BatchRequestPartParser = function (part, request) {
@@ -34,23 +35,36 @@ angular.module(window.ahb.name).factory('httpBatcher', [
         BatchRequestPartParser.prototype = (function () {
             var process = function () {
                 var responseParts = this.part.split(constants.newline),
-                    result = {},
+                    result = {
+                        headers: {}
+                    },
                     responsePart,
-                    i;
+                    i, parsedSpaceBetweenHeadersAndMessage = false;
 
-                debugger;
                 for (i = 0; i < responseParts.length; i += 1) {
                     responsePart = responseParts[i];
-                    if (result.contentType === undefined && responsePart.indexOf('-type') !== -1) {
+                    if (responsePart === constants.emptyString) {
+                        parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
+                        continue;
+                    }
 
+                    if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
+                        result.contentType = responsePart.split(constants.forwardSlash)[1];
+                    } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
+                        var headerParts = responsePart.split(constants.colon);
+                        result.headers[headerParts[0]] = headerParts[1];
                     } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
                         var lineParts = responsePart.split(constants.singleSpace);
                         result.statusCode = lineParts[1];
-                        result.statusText = lineParts[2];
+                        result.statusText = lineParts.slice(2).join(constants.singleSpace);
+                    } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
+                        result.data = responsePart;
+                        break;
                     }
                 }
 
-                this.request.callback();
+                result.headers['Content-Type'] = result.contentType;
+                this.request.callback(result.statusCode, result.data, result.headers, result.statusText);
             };
 
             return {
@@ -77,7 +91,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             }
                         },
                         batchBody = [],
-                        urlInfo, i, request;
+                        urlInfo, i, request, header;
 
                     for (i = 0; i < requests.length; i += 1) {
                         request = requests[i];
@@ -87,20 +101,22 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
 
                         batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
-                        batchBody.push('Host: ' + urlInfo.host, '');
+                        batchBody.push('Host: ' + urlInfo.host);
 
-                        if (request.method !== 'GET' && request.method !== 'DELETE') {
-                            batchBody.push('Content-Type: ' + request.contentType, constants.emptyString);
+                        for (header in request.headers) {
+                            batchBody.push(header + ': ' + request.headers[header]);
                         }
+
+                        batchBody.push(constants.emptyString);
 
                         if (request.data) {
                             batchBody.push(angular.toJson(request.data));
                         }
 
                         batchBody.push(constants.emptyString);
-                        batchBody.push(constants.doubleDash + boundary + constants.doubleDash);
                     }
 
+                    batchBody.push(constants.doubleDash + boundary + constants.doubleDash);
                     httpConfig.data = batchBody.join(constants.newline);
                     return httpConfig;
                 },

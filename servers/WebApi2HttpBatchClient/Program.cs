@@ -33,9 +33,11 @@ namespace WebApi2HttpBatchClient
             batchContent.Add(
                 new HttpMessageContent(
                     new HttpRequestMessage(
-                        HttpMethod.Get,
-                        "http://localhost:8080/api/products/2"
+                        HttpMethod.Put,
+                        "http://localhost:8080/api/products"
                     )
+                    {
+                        Content = new HttpContent("{\"Name\":\"Product X\",\"StockQuantity\":300}")                    }
                 )
             );
 
