@@ -2,7 +2,7 @@
   "name": "angular-http-batcher",
   "version": "1.0.0",
   "description": "Enables HTTP batch requests with Angular",
-  "main": "angular-http-batcher.min.js",
+  "main": "dist/angular-http-batch.min.js",
   "keywords": [
     "angularjs",
     "angular",
@@ -32,13 +32,9 @@
     "tests"
   ],
   "devDependencies": {
-    "lesshat": ">= 3.0.1",
-    "bootstrap": ">= 3.1.1",
-    "jQuery": ">= 1.11.1",
     "sinon": "~1.10.3"
   },
   "dependencies": {
-    "angular": ">= 1.2.12",
-    "bower-parseuri": "*"
+    "angular": ">= 1.2.12"
   }
 }
