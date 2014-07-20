@@ -130,7 +130,7 @@
                 },
                 dist: {
                     files: {
-                        'dist/jcs-auto-validate.min.js': ['dist/jcs-auto-validate.js']
+                        'dist/angular-http-batch.min.js': ['dist/angular-http-batch.js']
                     }
                 }
             },
@@ -140,27 +140,21 @@
                     banner: '/*\n * <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
                         '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
                         ' * <%= pkg.homepage %>\n' +
-                        ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;*/\n'
+                        ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n */'
                 },
                 dist: {
-                    src: ['src/jcs-auto-validate.js',
-                        'src/providers/validator.js',
-                        'src/services/bootstrap3ElementModifier.js',
-                        'src/services/debounce.js',
-                        'src/services/defaultErrorMessageResolver.js',
-                        'src/services/foundation5ElementModifier.js',
-                        'src/services/validationManager.js',
-                        'src/config/ngSubmitDecorator.js',
-                        'src/config/ngModelDecorator.js',
-                        'src/jcs-auto-validate-run.js'],
-                    dest: 'dist/jcs-auto-validate.js'
+                    src: ['src/angular-http-batch.js',
+                          'src/providers/httpBatchConfig.js',
+                          'src/services/httpBatcher.js',
+                          'src/config/httpBackendDecorator.js'],
+                    dest: 'dist/angular-http-batch.js'
                 }
             },
 
             plato: {
                 analysis: {
                     options : {
-                        title: 'AnguarJS Auto-Validate Complexity Report',
+                        title: 'Angular Http Batch Complexity Report',
                         jshint : grunt.file.readJSON('.jshintrc')
                     },
                     files: {
@@ -184,12 +178,12 @@
         // Create Custom Tasks
         grunt.registerTask('default', [
             'jsbeautifier',
-            'jshint'//,
-            //'karma:unit',
-            //'plato:analysis',
+            'jshint',
+            'karma:unit',
+            'plato:analysis',
 
-            //'concat:dist',
-            //'uglify:dist'
+            'concat:dist',
+            'uglify:dist'
         ]);
     };
 }(module));
