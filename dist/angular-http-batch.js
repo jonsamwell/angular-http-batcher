@@ -364,7 +364,7 @@ angular.module(window.ahb.name).config(['$provide',
             '$delegate',
             'httpBatcher',
             function ($delegate, httpBatcher) {
-                return function (method, url, post, callback, headers, timeout, withCredentials, responseType) {
+                var $httpBackendFn = function (method, url, post, callback, headers, timeout, withCredentials, responseType) {
                     if (httpBatcher.canBatchRequest(url, method)) {
                         httpBatcher.batchRequest({
                             method: method,
@@ -377,11 +377,21 @@ angular.module(window.ahb.name).config(['$provide',
                             responseType: responseType
                         });
                     } else {
-                        // could us '.call' here as it is quicker but using apply enables us to pass param array
-                        // and be forward/backward compatible
+                        // could use '.call' here as it is quicker but using apply enables us to pass param array
+                        // and be forward/backward compatible with all the Angular versions.
                         return $delegate.apply(this, arguments);
                     }
                 };
+
+                // If we are testing using angular-mocks we need to provide their special methods
+                // on the function we are returning otherwise your tests won't work :-(.
+                if (angular.mock) {
+                    angular.forEach($delegate, function (fn, key) {
+                        $httpBackendFn[key] = fn;
+                    });
+                }
+
+                return $httpBackendFn;
             }
         ]);
     }
