@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.0.0 - 2014-07-20
+ * angular-http-batcher - v1.0.0 - 2014-07-21
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2014 Jon Samwell;
  */window.ahb = {
@@ -163,6 +163,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 colon: ':'
             },
 
+            currentBatchedRequests = {},
+
             BatchRequestPartParser = function (part, request) {
                 this.part = part;
                 this.request = request;
@@ -177,6 +179,25 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 $timeout(function () {
                     self.send();
                 }, config.batchRequestCollectionDelay, false);
+            },
+
+            canBatchRequest = function (url, method) {
+                return httpBatchConfig.canBatchCall(url, method);
+            },
+
+            batchRequest = function (request) {
+                var batchConfig = httpBatchConfig.getBatchConfig(request.url),
+                    batchRequestManager = currentBatchedRequests[batchConfig.batchEndpointUrl];
+
+                if (batchRequestManager === undefined) {
+                    batchRequestManager = new BatchRequestManager(batchConfig, function () {
+                        // this removes the batch request that will be sent from the list of pending calls.
+                        delete currentBatchedRequests[batchConfig.batchEndpointUrl];
+                    });
+                    currentBatchedRequests[batchConfig.batchEndpointUrl] = batchRequestManager;
+                }
+
+                batchRequestManager.addRequest(request);
             };
 
         BatchRequestPartParser.prototype = (function () {
@@ -186,7 +207,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         headers: {}
                     },
                     responsePart,
-                    i, parsedSpaceBetweenHeadersAndMessage = false;
+                    i, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
 
                 for (i = 0; i < responseParts.length; i += 1) {
                     responsePart = responseParts[i];
@@ -198,10 +219,10 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                     if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
                         result.contentType = responsePart.split(constants.forwardSlash)[1];
                     } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
-                        var headerParts = responsePart.split(constants.colon);
+                        headerParts = responsePart.split(constants.colon);
                         result.headers[headerParts[0]] = headerParts[1];
                     } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
-                        var lineParts = responsePart.split(constants.singleSpace);
+                        lineParts = responsePart.split(constants.singleSpace);
                         result.statusCode = lineParts[1];
                         result.statusText = lineParts.slice(2).join(constants.singleSpace);
                     } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
@@ -327,27 +348,6 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 send: send
             };
         }());
-
-        var currentBatchedRequests = {},
-
-            canBatchRequest = function (url, method) {
-                return httpBatchConfig.canBatchCall(url, method);
-            },
-
-            batchRequest = function (request) {
-                var batchConfig = httpBatchConfig.getBatchConfig(request.url),
-                    batchRequestManager = currentBatchedRequests[batchConfig.batchEndpointUrl];
-
-                if (batchRequestManager === undefined) {
-                    batchRequestManager = new BatchRequestManager(batchConfig, function () {
-                        // this removes the batch request that will be sent from the list of pending calls.
-                        delete currentBatchedRequests[batchConfig.batchEndpointUrl];
-                    });
-                    currentBatchedRequests[batchConfig.batchEndpointUrl] = batchRequestManager;
-                }
-
-                batchRequestManager.addRequest(request);
-            };
 
         return {
             canBatchRequest: canBatchRequest,

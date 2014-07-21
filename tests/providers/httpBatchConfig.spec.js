@@ -5,7 +5,7 @@
 
         beforeEach(module(window.ahb.name));
 
-        describe('validator', function () {
+        describe('httpBatchConfig', function () {
             beforeEach(inject(function ($injector) {
                 sandbox = sinon.sandbox.create();
                 httpBatchConfig = $injector.get('httpBatchConfig');
