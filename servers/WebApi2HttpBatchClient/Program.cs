@@ -37,7 +37,8 @@ namespace WebApi2HttpBatchClient
                         "http://localhost:8080/api/products"
                     )
                     {
-                        Content = new HttpContent("{\"Name\":\"Product X\",\"StockQuantity\":300}")                    }
+                        Content = new StringContent("{\"Name\":\"Product X\",\"StockQuantity\":300}", Encoding.UTF8, "application/json")
+                    }
                 )
             );
 

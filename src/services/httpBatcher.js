@@ -53,39 +53,62 @@ angular.module(window.ahb.name).factory('httpBatcher', [
             };
 
         BatchRequestPartParser.prototype = (function () {
-            var process = function () {
-                var responseParts = this.part.split(constants.newline),
-                    result = {
-                        headers: {}
-                    },
-                    responsePart,
-                    i, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
+            var convertDataToCorrectType = function (contentType, dataStr) {
+                    var data = dataStr;
+                    contentType = contentType.toLowerCase();
 
-                for (i = 0; i < responseParts.length; i += 1) {
-                    responsePart = responseParts[i];
-                    if (responsePart === constants.emptyString) {
-                        parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
-                        continue;
+                    // what other type should we support? XML maybe?
+                    if (contentType.indexOf('json') > -1) {
+                        data = angular.fromJson(dataStr);
                     }
 
-                    if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
-                        result.contentType = responsePart.split(constants.forwardSlash)[1];
-                    } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
-                        headerParts = responsePart.split(constants.colon);
-                        result.headers[headerParts[0]] = headerParts[1];
-                    } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
-                        lineParts = responsePart.split(constants.singleSpace);
-                        result.statusCode = lineParts[1];
-                        result.statusText = lineParts.slice(2).join(constants.singleSpace);
-                    } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
-                        result.data = responsePart;
-                        break;
-                    }
-                }
+                    return data;
+                },
 
-                result.headers['Content-Type'] = result.contentType;
-                this.request.callback(result.statusCode, result.data, result.headers, result.statusText);
-            };
+                // mainly here to polyfill ie8 :-(
+                trim = function (data) {
+                    if (data.trim) {
+                        data = data.trim();
+                    } else {
+                        data = data.replace(/^\s+|\s+$/g, '');
+                    }
+
+                    return data;
+                },
+
+                process = function () {
+                    var responseParts = this.part.split(constants.newline),
+                        result = {
+                            headers: {}
+                        },
+                        responsePart,
+                        i, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
+
+                    for (i = 0; i < responseParts.length; i += 1) {
+                        responsePart = responseParts[i];
+                        if (responsePart === constants.emptyString) {
+                            parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
+                            continue;
+                        }
+
+                        if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
+                            result.contentType = responsePart.split(constants.forwardSlash)[1];
+                        } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
+                            headerParts = responsePart.split(constants.colon);
+                            result.headers[headerParts[0]] = trim(headerParts[1]);
+                        } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
+                            lineParts = responsePart.split(constants.singleSpace);
+                            result.statusCode = parseInt(lineParts[1], 10);
+                            result.statusText = lineParts.slice(2).join(constants.singleSpace);
+                        } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
+                            result.data = convertDataToCorrectType(result.contentType, responsePart);
+                            break;
+                        }
+                    }
+
+                    result.headers['Content-Type'] = result.contentType;
+                    this.request.callback(result.statusCode, result.data, result.headers, result.statusText);
+                };
 
             return {
                 process: process
