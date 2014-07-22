@@ -50,6 +50,20 @@
                 expect(httpBatcher.canBatchRequest.calledOnce).to.equal(true);
                 expect(httpBatcher.batchRequest.called).to.equal(false);
             });
+
+            it('should add a continueDownNormalPipeline method to the object passed to batchRequest which when invoked calls the normal httpBackend method', function () {
+                sandbox.stub(httpBatcher, 'canBatchRequest').returns(true);
+                sandbox.stub(httpBatcher, 'batchRequest');
+
+                $httpBackend.expectGET('http://www.google.com').respond(200);
+
+                $httpBackend('GET', 'http://www.google.com', undefined, angular.noop);
+
+                expect(httpBatcher.batchRequest.getCall(0).args[0].continueDownNormalPipeline).to.not.equal(undefined);
+                httpBatcher.batchRequest.getCall(0).args[0].continueDownNormalPipeline();
+
+                $httpBackend.flush();
+            });
         });
     });
 }(angular, sinon));

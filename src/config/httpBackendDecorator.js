@@ -7,6 +7,8 @@ angular.module(window.ahb.name).config(['$provide',
             'httpBatcher',
             function ($delegate, httpBatcher) {
                 var $httpBackendFn = function (method, url, post, callback, headers, timeout, withCredentials, responseType) {
+                    var self = this,
+                        callArgs = arguments;
                     if (httpBatcher.canBatchRequest(url, method)) {
                         httpBatcher.batchRequest({
                             method: method,
@@ -16,7 +18,10 @@ angular.module(window.ahb.name).config(['$provide',
                             headers: headers,
                             timeout: timeout,
                             withCredentials: withCredentials,
-                            responseType: responseType
+                            responseType: responseType,
+                            continueDownNormalPipeline: function () {
+                                $delegate.apply(self, callArgs);
+                            }
                         });
                     } else {
                         // could use '.call' here as it is quicker but using apply enables us to pass param array

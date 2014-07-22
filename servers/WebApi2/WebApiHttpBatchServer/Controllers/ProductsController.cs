@@ -35,7 +35,8 @@ namespace WebApiHttpBatchServer.Controllers
         [HttpPut]
         public long Create(Product product)
         {
-            return 1;
+            throw new UnauthorizedAccessException("Not authorised!");
+            //return 1;
         }
     }
 }

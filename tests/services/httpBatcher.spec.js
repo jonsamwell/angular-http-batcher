@@ -42,7 +42,8 @@
 
                     httpBatcher.batchRequest({
                         url: 'http://www.gogle.com/resource',
-                        method: 'GET'
+                        method: 'GET',
+                        callback: angular.noop
                     });
 
                     expect(httpBatchConfig.getBatchConfig.calledOnce).to.equal(true);
@@ -58,7 +59,8 @@
 
                     httpBatcher.batchRequest({
                         url: 'http://www.gogle.com/resource',
-                        method: 'GET'
+                        method: 'GET',
+                        callback: angular.noop
                     });
 
                     $timeout.flush();
@@ -80,7 +82,8 @@
 
                     httpBatcher.batchRequest({
                         url: 'http://www.gogle.com/resource',
-                        method: 'GET'
+                        method: 'GET',
+                        callback: angular.noop
                     });
 
                     $timeout.flush();
@@ -109,7 +112,8 @@
                             propTwo: 'two',
                             propThree: 3.00,
                             propFour: true
-                        })
+                        }),
+                        callback: angular.noop
                     });
 
                     $timeout.flush();
@@ -135,7 +139,8 @@
                         headers: {
                             'x-custom': 'data123',
                             Authentication: '1234567890'
-                        }
+                        },
+                        callback: angular.noop
                     });
 
                     $timeout.flush();
@@ -170,7 +175,8 @@
                             propTwo: 'two',
                             propThree: 3.00,
                             propFour: true
-                        })
+                        }),
+                        callback: angular.noop
                     });
                     httpBatcher.batchRequest({
                         url: 'http://www.gogle.com/resource',
@@ -178,7 +184,8 @@
                         headers: {
                             'x-custom': 'data123',
                             Authentication: '1234567890'
-                        }
+                        },
+                        callback: angular.noop
                     });
 
                     $timeout.flush();
@@ -260,6 +267,140 @@
                             expect(headers['X-SomeHeader']).to.equal('123AbC');
                             expect(headers.Authentication).to.equal('Bonza');
                             done();
+                        }
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
+                it('should parse a failed response of a single batch request', function (done) {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        'HTTP/1.1 401 UnAuthorised\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
+                        '{ "message": "Access Denied" }' +
+                        '\r\n--some_boundary_mocked--\r\n';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+                        'content-type': 'multipart/mixed; boundary="some_boundary_mocked"'
+                    }, 'OK');
+
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        callback: function (statusCode, data, headers, statusText) {
+                            expect(statusCode).to.equal(401);
+                            expect(statusText).to.equal('UnAuthorised');
+                            expect(data).to.deep.equal({
+                                message: 'Access Denied'
+                            });
+                            done();
+                        }
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
+                it('should parse multiple responses of a single batch request', function (done) {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--some_boundary_mocked' +
+                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n"{\\"propOne\\":1,\\"propTwo\\":\\"two\\",\\"propThree\\":3,\\"propFour\\":true}"' +
+                        '\r\n\r\n--some_boundary_mocked' +
+                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
+                        '\r\n\r\n\r\n--some_boundary_mocked--',
+
+                        responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
+                        '[{"Name":"Product 1","Id":1,"StockQuantity":100},{"Name":"Product 2","Id":2,"StockQuantity":2},{"Name":"Product 3","Id":3,"StockQuantity":32432}]' +
+                        '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        'HTTP/1.1 200 YO!\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
+                        '[{"name":"Jon","id":1,"age":30},{"name":"Laurie","id":2,"age":29}]' +
+                        '\r\n--some_boundary_mocked--\r\n',
+
+                        completedFnInvocationCount = 0,
+
+                        completedFn = function () {
+                            completedFnInvocationCount += 1;
+                            if (completedFnInvocationCount === 2) {
+                                done();
+                            }
+                        };
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+                        'content-type': 'multipart/mixed; boundary="some_boundary_mocked"'
+                    }, 'OK');
+
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource-two',
+                        method: 'POST',
+                        headers: {
+                            Authentication: '123987'
+                        },
+                        data: angular.toJson({
+                            propOne: 1,
+                            propTwo: 'two',
+                            propThree: 3.00,
+                            propFour: true
+                        }),
+                        callback: function (statusCode, data, headers, statusText) {
+                            expect(statusCode).to.equal(200);
+                            expect(statusText).to.equal('OK');
+                            expect(headers['Content-Type']).to.equal('json; charset=utf-8');
+                            expect(data).to.deep.equal([{
+                                Name: 'Product 1',
+                                Id: 1,
+                                StockQuantity: 100
+                            }, {
+                                Name: 'Product 2',
+                                Id: 2,
+                                StockQuantity: 2
+                            }, {
+                                Name: 'Product 3',
+                                Id: 3,
+                                StockQuantity: 32432
+                            }]);
+                            completedFn();
+                        }
+                    });
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        headers: {
+                            'x-custom': 'data123',
+                            Authentication: '1234567890'
+                        },
+                        callback: function (statusCode, data, headers, statusText) {
+                            expect(statusCode).to.equal(200);
+                            expect(statusText).to.equal('YO!');
+                            expect(headers['Content-Type']).to.equal('json; charset=utf-8');
+                            expect(data).to.deep.equal([{
+                                name: 'Jon',
+                                id: 1,
+                                age: 30
+                            }, {
+                                name: 'Laurie',
+                                id: 2,
+                                age: 29
+                            }]);
+
+                            completedFn();
                         }
                     });
 

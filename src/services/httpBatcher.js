@@ -28,8 +28,17 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 this.sendCallback = sendCallback;
                 this.requests = [];
 
-                $timeout(function () {
-                    self.send();
+                this.currentTimeoutToken = $timeout(function () {
+                    self.currentTimeoutToken = undefined;
+                    if (self.requests.length < self.config.minimumBatchSize) {
+                        // should let the request continue normally???
+                        angular.forEach(this.requests, function (request) {
+                            request.continueDownNormalPipeline();
+                        });
+                    } else {
+                        self.send();
+                    }
+
                 }, config.batchRequestCollectionDelay, false);
             },
 
@@ -57,7 +66,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                     var data = dataStr;
                     contentType = contentType.toLowerCase();
 
-                    // what other type should we support? XML maybe?
+                    // what other types should we support? XML maybe?
                     if (contentType.indexOf('json') > -1) {
                         data = angular.fromJson(dataStr);
                     }
@@ -184,12 +193,21 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             }
                         }
                     }, function (err) {
-                        //alert(err);
+                        angular.forEach(self.requests, function (request) {
+                            request.callback(err.statusCode, err.data, err.headers, err.statusText);
+                        });
                     });
                 },
 
                 addRequest = function (request) {
                     this.requests.push(request);
+
+                    if (this.requests.length > this.config.maxBatchedRequestPerCall) {
+                        $timeout.cancel(this.currentTimeoutToken);
+                        this.currentTimeoutToken = undefined;
+                        this.send();
+                    }
+
                     return true;
                 },
 
