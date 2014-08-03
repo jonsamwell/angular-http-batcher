@@ -23,7 +23,7 @@
 
             // Style Checks
             jshint: {
-                files: ['<%= srcfolder %>**/*.js', '<%= testsfolder %>**/*.spec.js'],
+                files: ['<%= srcfolder %>**/*.js', '!<%= srcfolder %>**/*.postfix.js', '!<%= srcfolder %>**/*.prefix.js', '<%= testsfolder %>**/*.spec.js'],
                 options: {
                     jshintrc: '.jshintrc'
                 }
@@ -140,13 +140,15 @@
                     banner: '/*\n * <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
                         '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
                         ' * <%= pkg.homepage %>\n' +
-                        ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;\n */'
+                        ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>\n */\n'
                 },
                 dist: {
-                    src: ['src/angular-http-batch.js',
+                    src: ['src/angular-http-batch.prefix.js',
+                          'src/angular-http-batch.js',
                           'src/providers/httpBatchConfig.js',
                           'src/services/httpBatcher.js',
-                          'src/config/httpBackendDecorator.js'],
+                          'src/config/httpBackendDecorator.js',
+                          'src/angular-http-batch.postfix.js'],
                     dest: 'dist/angular-http-batch.js'
                 }
             },
@@ -158,7 +160,7 @@
                         jshint : grunt.file.readJSON('.jshintrc')
                     },
                     files: {
-                        'tests/reports/complexity': ['src/**/*.js']
+                        'tests/reports/complexity': ['src/**/*.js', '!src/**/*.postfix.js', '!src/**/*.prefix.js']
                     }
                 }
             }

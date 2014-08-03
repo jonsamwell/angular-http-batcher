@@ -1,8 +1,12 @@
 /*
- * angular-http-batcher - v1.0.0 - 2014-07-22
+ * angular-http-batcher - v1.0.0 - 2014-08-03
  * https://github.com/jonsamwell/angular-http-batcher
- * Copyright (c) 2014 Jon Samwell;
- */window.ahb = {
+ * Copyright (c) 2014 Jon Samwell
+ */
+(function (window, angular) {
+        'use strict';
+
+window.ahb = {
     name: 'jcs.angular-http-batch'
 };
 
@@ -179,8 +183,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 this.currentTimeoutToken = $timeout(function () {
                     self.currentTimeoutToken = undefined;
                     if (self.requests.length < self.config.minimumBatchSize) {
-                        // should let the request continue normally???
-                        angular.forEach(this.requests, function (request) {
+                        // should let the request continue normally
+                        angular.forEach(self.requests, function (request) {
                             request.continueDownNormalPipeline();
                         });
                     } else {
@@ -442,3 +446,5 @@ angular.module(window.ahb.name).config(['$provide',
         ]);
     }
 ]);
+
+}(window, angular));

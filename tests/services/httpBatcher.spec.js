@@ -191,6 +191,33 @@
                     $timeout.flush();
                     $httpBackend.flush();
                 });
+
+                it('should not create a batch request but let the request continue normally if the min batch size is not met', function () {
+                    var normalRouteCalled = 0,
+                        batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 2
+                        };
+
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource-two',
+                        method: 'GET',
+                        headers: {
+                            Authentication: '123987'
+                        },
+                        callback: angular.noop,
+                        continueDownNormalPipeline: function () {
+                            normalRouteCalled += 1;
+                        }
+                    });
+
+                    $timeout.flush();
+
+                    expect(normalRouteCalled).to.equal(1);
+                });
             });
 
             describe('batchRequest response parsing', function () {
