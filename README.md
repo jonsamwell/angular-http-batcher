@@ -1,9 +1,11 @@
-angular-http-batcher - enabling transparent HTTP batch request with AngularJS
+Angular Http Batcher - enabling transparent HTTP batch request with AngularJS
 ====================
 
 The biggest performance boost you will get with modern single page style apps is to reduce the number of HTTP request you 
 send.  This module has been designed to batch http requests to the same endpoint following the http 1.1 batch spec.  All
 you need to do is configure the batch endpoint with the library and the rest is taken care of.
+
+See my original blog blog for a detailed overview - http://jonsamwell.com/angular-http-batcher
 
 <h3 id="angular-http-batcher-getting-started">Getting Started</h3>
 
