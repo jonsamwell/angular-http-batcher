@@ -5,7 +5,7 @@ The biggest performance boost you will get with modern single page style apps is
 send.  This module has been designed to batch http requests to the same endpoint following the http 1.1 batch spec.  All
 you need to do is configure the batch endpoint with the library and the rest is taken care of.
 
-See my original blog blog for a detailed overview - http://jonsamwell.com/angular-http-batcher
+See my original blog blog for a detailed overview - http://jonsamwell.com/batching-http-requests-in-angular/
 
 <h3 id="angular-http-batcher-getting-started">Getting Started</h3>
 
