@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.0.0 - 2014-08-03
+ * angular-http-batcher - v1.0.0 - 2014-08-23
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2014 Jon Samwell
  */
@@ -55,7 +55,7 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          * @param {Object=} config - (optional) The configuration of the batch request for this domain
          *  - **maxBatchedRequestPerCall** – `{int}` – The maximum number of single http request that are allow to be
          *      sent in one http batch request.
-         *  - **minimumBatchSize** - `{int}` - Defaults to 1.  The small number of individual calls allowed in a batch request.
+         *  - **minimumBatchSize** - `{int}` - Defaults to 1.  The smallest number of individual calls allowed in a batch request.
          * - **batchRequestCollectionDelay** - `{int}` - The default time in milliseconds the http batcher should wait to collection all request to this domain after
          *      the first http call that can be batched has been collect.  This defaults to 100ms.  Therefore if you send
          *      a HTTP GET call that can be batched the HTTP batcher will receive this call and wait a further 100ms before

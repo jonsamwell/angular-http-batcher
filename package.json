@@ -1,7 +1,7 @@
 {
   "name": "angular-http-batcher",
-  "version": "1.0.3",
-  "description": "Enables HTTP batch requests with Angular",
+  "version": "1.0.0",
+  "description": "Enables transparent HTTP batch requests with Angular",
   "main": "angular-http-batcher.min.js",
   "scripts": {
     "test": "default"
@@ -12,16 +12,16 @@
   },
   "keywords": [
     "angularjs",
-    "validation",
+    "performance",
     "http",
     "http batch"
   ],
   "author": "Jon Samwell <jonsamwell@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jonsamwell/angular-auto-validate/issues"
+    "url": "https://github.com/jonsamwell/angular-http-batcher/issues"
   },
-  "homepage": "https://github.com/jonsamwell/angular-auto-validate",
+  "homepage": "https://github.com/jonsamwell/angular-http-batcher",
   "devDependencies": {
     "bower": "^1.3.4",
     "chai": "^1.9.1",
