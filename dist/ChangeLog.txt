@@ -1,0 +1,3 @@
+27/08/2014 V1.1.0
+Fixed bug when a request hit the batch collection timeout and the request have not reached the min batch size the pending
+request is not moved which forces other request to have sending delays.

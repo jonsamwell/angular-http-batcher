@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.0.0 - 2014-08-23
+ * angular-http-batcher - v1.1.0 - 2014-08-27
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2014 Jon Samwell
  */
@@ -183,6 +183,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 this.currentTimeoutToken = $timeout(function () {
                     self.currentTimeoutToken = undefined;
                     if (self.requests.length < self.config.minimumBatchSize) {
+                        self.sendCallback();
                         // should let the request continue normally
                         angular.forEach(self.requests, function (request) {
                             request.continueDownNormalPipeline();

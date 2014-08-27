@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Batch;
 using System.Web.Http.Cors;
+using System.Web.Http.Dispatcher;
 
 namespace WebApiHttpBatchServer
 {
@@ -31,7 +33,9 @@ namespace WebApiHttpBatchServer
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
+                defaults: new { id = RouteParameter.Optional },
+                constraints: null,
+                handler: new CorsMessageHandler(config) { InnerHandler = new HttpControllerDispatcher(config) }
             );
         }
     }

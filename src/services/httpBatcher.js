@@ -31,6 +31,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 this.currentTimeoutToken = $timeout(function () {
                     self.currentTimeoutToken = undefined;
                     if (self.requests.length < self.config.minimumBatchSize) {
+                        self.sendCallback();
                         // should let the request continue normally
                         angular.forEach(self.requests, function (request) {
                             request.continueDownNormalPipeline();

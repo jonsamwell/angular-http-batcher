@@ -8,6 +8,7 @@
 
 <div ng-controller="mainCtrl">
     <button type="button" ng-click="callSingle();">Call Single API Method</button>
+    <button type="button" ng-click="callMultiple();">Call Multiple API Methods (Which will be batched)</button>
 </div>
 
 <!--<script src="../bower_components/angular/angular.js"></script>-->
@@ -38,26 +39,34 @@
         '$scope',
         '$http',
     function ($scope, $http) {
-        $scope.callSingle = function () {
+        $scope.callMultiple = function () {
             $http.get('http://localhost:8080/api/products').then(function (data) {
-                console.log('success 0 - ' + data.data);
+                console.log('success on batch call No.0 - ' + data.data);
             }, function (err) {
-                console.log('error 0 - ' + err);
+                console.log('error on batch call No.0 - ' + err);
             });
 
             $http.get('http://localhost:8080/api/products/2').then(function (data) {
-                console.log('success 1 - ' + data.data);
+                console.log('success on batch call No.1 - ' + data.data);
             }, function (err) {
-                console.log('error 1 - ' + err);
+                console.log('error on batch call No.1 - ' + err);
             });
 
             $http.put('http://localhost:8080/api/products', {
                 Name: 'Product X',
                 StockQuantity: 300
             }).then(function (data) {
-                console.log('success 2 - ' + data.data);
+                console.log('success on batch call No.2 - ' + data.data);
             }, function (err) {
-                console.log('error 2 - ' + angular.fromJson(err));
+                console.log('error on batch call No.2 (This is expected - just to illustrate an error in one of the batched requests) - ' + angular.fromJson(err));
+            });
+        };
+
+        $scope.callSingle = function () {
+            $http.get('http://localhost:8080/api/products').then(function (data) {
+                console.log('success on single call No.0 - ' + data.data);
+            }, function (err) {
+                console.log('error on single call No.0 - ' + err);
             });
         };
     }]);
