@@ -86,6 +86,16 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                     return data;
                 },
 
+                convertHeadersToString = function (headers) {
+                    var property,
+                        result = '';
+                    for (property in headers) {
+                        result += property + ': ' + headers[property] + '\n';
+                    }
+
+                    return result;
+                },
+
                 process = function () {
                     var responseParts = this.part.split(constants.newline),
                         result = {
@@ -117,7 +127,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                     }
 
                     result.headers['Content-Type'] = result.contentType;
-                    this.request.callback(result.statusCode, result.data, result.headers, result.statusText);
+                    result.headerString = convertHeadersToString(result.headers);
+                    this.request.callback(result.statusCode, result.data, result.headerString, result.statusText);
                 };
 
             return {

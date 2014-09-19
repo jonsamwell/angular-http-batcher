@@ -1,3 +1,7 @@
+19/09/2014 V1.2.0
+Fixed issue when {cache: true} on requests as the module was returning the headers as an object.  However, it the request is to be cache angular expects the headers to
+be a string.
+
 27/08/2014 V1.1.0
 Fixed bug when a request hit the batch collection timeout and the request have not reached the min batch size the pending
 request is not moved which forces other request to have sending delays.

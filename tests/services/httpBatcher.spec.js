@@ -1,7 +1,31 @@
 (function (angular, sinon) {
     'use strict';
     describe('httpBatcher', function () {
-        var sandbox, $httpBackend, $timeout, httpBatchConfig, httpBatcher;
+        var sandbox, $httpBackend, $timeout, httpBatchConfig, httpBatcher,
+            parseHeaders = function (headers) {
+                var parsed = {},
+                    key, val, i;
+
+                if (!headers) {
+                    return parsed;
+                }
+
+                headers.split('\n').forEach(function (line) {
+                    i = line.indexOf(':');
+                    key = line.substr(0, i).trim().toLowerCase();
+                    val = line.substr(i + 1).trim();
+
+                    if (key) {
+                        if (parsed[key]) {
+                            parsed[key] += ', ' + val;
+                        } else {
+                            parsed[key] = val;
+                        }
+                    }
+                });
+
+                return parsed;
+            };
 
         beforeEach(module(window.ahb.name));
 
@@ -244,9 +268,11 @@
                         url: 'http://www.gogle.com/resource',
                         method: 'GET',
                         callback: function (statusCode, data, headers, statusText) {
+                            var headerObj = parseHeaders(headers);
                             expect(statusCode).to.equal(200);
                             expect(statusText).to.equal('OK');
-                            expect(headers['Content-Type']).to.equal('json; charset=utf-8');
+
+                            expect(headerObj['content-type']).to.equal('json; charset=utf-8');
                             expect(data).to.deep.equal([{
                                 Name: 'Product 1',
                                 Id: 1,
@@ -291,8 +317,9 @@
                         url: 'http://www.gogle.com/resource',
                         method: 'GET',
                         callback: function (statusCode, data, headers) {
-                            expect(headers['X-SomeHeader']).to.equal('123AbC');
-                            expect(headers.Authentication).to.equal('Bonza');
+                            var headerObj = parseHeaders(headers);
+                            expect(headerObj['x-someheader']).to.equal('123AbC');
+                            expect(headerObj.authentication).to.equal('Bonza');
                             done();
                         }
                     });
@@ -387,9 +414,10 @@
                             propFour: true
                         }),
                         callback: function (statusCode, data, headers, statusText) {
+                            var headerObj = parseHeaders(headers);
                             expect(statusCode).to.equal(200);
                             expect(statusText).to.equal('OK');
-                            expect(headers['Content-Type']).to.equal('json; charset=utf-8');
+                            expect(headerObj['content-type']).to.equal('json; charset=utf-8');
                             expect(data).to.deep.equal([{
                                 Name: 'Product 1',
                                 Id: 1,
@@ -414,9 +442,10 @@
                             Authentication: '1234567890'
                         },
                         callback: function (statusCode, data, headers, statusText) {
+                            var headerObj = parseHeaders(headers);
                             expect(statusCode).to.equal(200);
                             expect(statusText).to.equal('YO!');
-                            expect(headers['Content-Type']).to.equal('json; charset=utf-8');
+                            expect(headerObj['content-type']).to.equal('json; charset=utf-8');
                             expect(data).to.deep.equal([{
                                 name: 'Jon',
                                 id: 1,

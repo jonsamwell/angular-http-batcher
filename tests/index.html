@@ -12,12 +12,12 @@
 
 <script src="../bower_components/angular/angular.js"></script>
 
-<script src="../dist/angular-http-batch.js"></script>
+<!--<script src="../dist/angular-http-batch.js"></script>-->
 
-<!--<script src="../src/angular-http-batch.js"></script>-->
-<!--<script src="../src/providers/httpBatchConfig.js"></script>-->
-<!--<script src="../src/services/httpBatcher.js"></script>-->
-<!--<script src="../src/config/httpBackendDecorator.js"></script>-->
+<script src="../src/angular-http-batch.js"></script>
+<script src="../src/providers/httpBatchConfig.js"></script>
+<script src="../src/services/httpBatcher.js"></script>
+<script src="../src/config/httpBackendDecorator.js"></script>
 
 <script type="text/javascript">
     var app = angular.module('httpBatchExample', [window.ahb.name]);
@@ -28,7 +28,8 @@
                 httpBatchConfigProvider.setAllowedBatchEndpoint(
                         'http://fsatnav:8080',
                         'http://fsatnav:8080/api/batch', {
-                            batchRequestCollectionDelay: 500
+                            batchRequestCollectionDelay: 500,
+                            minimumBatchSize: 1
                         });
             }
     ]);
@@ -38,26 +39,26 @@
         '$http',
     function ($scope, $http) {
         $scope.callSingle = function () {
-            $http.get('http://fsatnav:8080/api/products').then(function (data) {
+            $http.get('http://fsatnav:8080/api/products', { cache: true }).then(function (data) {
                 console.log('success 0 - ' + data.data);
             }, function (err) {
                 console.log('error 0 - ' + err);
             });
 
-            $http.get('http://fsatnav:8080/api/products/2').then(function (data) {
-                console.log('success 1 - ' + data.data);
-            }, function (err) {
-                console.log('error 1 - ' + err);
-            });
-
-            $http.put('http://fsatnav:8080/api/products', {
-                Name: 'Product X',
-                StockQuantity: 300
-            }).then(function (data) {
-                console.log('success 2 - ' + data.data);
-            }, function (err) {
-                console.log('error 2 - ' + angular.fromJson(err));
-            });
+//            $http.get('http://fsatnav:8080/api/products/2').then(function (data) {
+//                console.log('success 1 - ' + data.data);
+//            }, function (err) {
+//                console.log('error 1 - ' + err);
+//            });
+//
+//            $http.put('http://fsatnav:8080/api/products', {
+//                Name: 'Product X',
+//                StockQuantity: 300
+//            }).then(function (data) {
+//                console.log('success 2 - ' + data.data);
+//            }, function (err) {
+//                console.log('error 2 - ' + angular.fromJson(err));
+//            });
         };
     }]);
 </script>
