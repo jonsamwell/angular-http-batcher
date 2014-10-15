@@ -97,32 +97,62 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 },
 
                 process = function () {
-                    var responseParts = this.part.split(constants.newline),
+                    if (this.part.indexOf('"odata.') > 0) {
+                        var result = {
+                            headers: {}
+                        }
+                        var content = this.part.substring(this.part.indexOf('{'));
+                        content = content.substring(0, content.lastIndexOf('}') + 1);
+                        result.data = JSON.parse(content);
+                        var headers = this.part.substring(0, this.part.indexOf('{') - 1).split(constants.newline);
+                        for (var i = 0; i < headers.length; i++) {
+                            var header = headers[i];
+                            if (header === constants.emptyString) {
+                                parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
+                                continue;
+                            }
+
+                            if (result.contentType === undefined && header.indexOf('-Type') !== -1 && header.indexOf('; msgtype=response') === -1) {
+                                result.contentType = header.split(constants.forwardSlash)[1];
+                            } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
+                                headerParts = header.split(constants.colon);
+                                if (headerParts.length > 1) {
+                                    result.headers[headerParts[0]] = trim(headerParts[1]);
+                                }
+                            } else if (result.statusCode === undefined && header.indexOf(constants.httpVersion) !== -1) {
+                                lineParts = header.split(constants.singleSpace);
+                                result.statusCode = parseInt(lineParts[1], 10);
+                                result.statusText = lineParts.slice(2).join(constants.singleSpace);
+                            }
+                        }
+                    } else {
+                        var responseParts = this.part.split(constants.newline),
                         result = {
                             headers: {}
                         },
                         responsePart,
                         i, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
 
-                    for (i = 0; i < responseParts.length; i += 1) {
-                        responsePart = responseParts[i];
-                        if (responsePart === constants.emptyString) {
-                            parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
-                            continue;
-                        }
+                        for (i = 0; i < responseParts.length; i += 1) {
+                            responsePart = responseParts[i];
+                            if (responsePart === constants.emptyString) {
+                                parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
+                                continue;
+                            }
 
-                        if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
-                            result.contentType = responsePart.split(constants.forwardSlash)[1];
-                        } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
-                            headerParts = responsePart.split(constants.colon);
-                            result.headers[headerParts[0]] = trim(headerParts[1]);
-                        } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
-                            lineParts = responsePart.split(constants.singleSpace);
-                            result.statusCode = parseInt(lineParts[1], 10);
-                            result.statusText = lineParts.slice(2).join(constants.singleSpace);
-                        } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
-                            result.data = convertDataToCorrectType(result.contentType, responsePart);
-                            break;
+                            if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
+                                result.contentType = responsePart.split(constants.forwardSlash)[1];
+                            } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
+                                headerParts = responsePart.split(constants.colon);
+                                result.headers[headerParts[0]] = trim(headerParts[1]);
+                            } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
+                                lineParts = responsePart.split(constants.singleSpace);
+                                result.statusCode = parseInt(lineParts[1], 10);
+                                result.statusText = lineParts.slice(2).join(constants.singleSpace);
+                            } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
+                                result.data = convertDataToCorrectType(result.contentType, responsePart);
+                                break;
+                            }
                         }
                     }
 
@@ -224,18 +254,29 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 },
 
                 getUrlInfo = function (url) {
-                    var protocolEndIndex = url.indexOf('://') + 3,
-                        urlParts = url.slice(protocolEndIndex).split(constants.forwardSlash);
-                    return {
-                        protocol: url.substring(0, protocolEndIndex),
-                        // Get the host portion of the url from '://' to the next'/'
-                        // [https://www.somedomain.com/]api/messages
-                        host: urlParts[0],
-                        relativeUrl: (function () {
-                            delete urlParts[0];
-                            return urlParts.join(constants.forwardSlash);
-                        }())
-                    };
+                    if (url.indexOf('//') < 0) {
+                        var protocolEndIndex = window.location.href.indexOf('://') + 3,
+                            urlParts = url.slice(protocolEndIndex).split(constants.forwardSlash);
+                        return {
+                            protocol: window.location.href.substring(0, protocolEndIndex),
+                            host: window.location.host,
+                            relativeUrl: url
+                        };
+                    }
+                    else {
+                        var protocolEndIndex = url.indexOf('://') + 3,
+                                urlParts = url.slice(protocolEndIndex).split(constants.forwardSlash);
+                        return {
+                            protocol: url.substring(0, protocolEndIndex),
+                            // Get the host portion of the url from '://' to the next'/'
+                            // [https://www.somedomain.com/]api/messages
+                            host: urlParts[0],
+                            relativeUrl: (function () {
+                                delete urlParts[0];
+                                return urlParts.join(constants.forwardSlash);
+                            }())
+                        };
+                    }
                 },
 
                 findResponseBoundary = function (contentType) {
