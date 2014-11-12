@@ -24,13 +24,13 @@ Include the javascript file in your html.
 Add the module as one of you application's dependencies.
 
 ```langauge-javascript
-angular.module('myApp', ['jcs.angular-http-batcher']);
+angular.module('myApp', ['jcs.angular-http-batch']);
 ```
 
 This module aims to be as transparent as possible.  I didn't want to add specific methods to send batch requests manually (although this feature is in the pipeline) as I think this should happen transparently for the developer so you are not tying your application to a specific implementation.  So in order for the library to be able to digisuse batchable HTTP request you need to register an endpoint that can accept a HTTP 1.1 batch request.
 
 ```language-javascript
-angular.module('myApp', ['jcs.angular-http-batcher']);
+angular.module('myApp', ['jcs.angular-http-batch']);
    .config([
       'httpBatchConfigProvider',
           function (httpBatchConfigProvider) {
