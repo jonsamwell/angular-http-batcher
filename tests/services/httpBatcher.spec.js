@@ -2,6 +2,12 @@
     'use strict';
     describe('httpBatcher', function () {
         var sandbox, $httpBackend, $timeout, httpBatchConfig, httpBatcher,
+            host = 'www.google.com.au',
+            $window = {
+                location: {
+                    host: host
+                }
+            },
             parseHeaders = function (headers) {
                 var parsed = {},
                     key, val, i;
@@ -27,6 +33,10 @@
                 return parsed;
             };
 
+
+        beforeEach(module(function ($provide) {
+            $provide.value('$window', $window);
+        }));
         beforeEach(module(window.ahb.name));
 
         describe('httpBatcher', function () {
@@ -34,6 +44,7 @@
                 sandbox = sinon.sandbox.create();
                 $httpBackend = $injector.get('$httpBackend');
                 $timeout = $injector.get('$timeout');
+
                 httpBatchConfig = $injector.get('httpBatchConfig');
                 httpBatcher = $injector.get('httpBatcher');
             }));
@@ -241,6 +252,35 @@
                     $timeout.flush();
 
                     expect(normalRouteCalled).to.equal(1);
+                });
+            });
+
+            describe('batchRequest request creation with relative url', function () {
+                it('should create the correct http post data for a single GET request with a relative url', function () {
+                    var batchConfig = {
+                            batchEndpointUrl: '/api/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; ' +
+                        'msgtype=request\r\n\r\n' +
+                        'GET /api/resource HTTP/1.1\r\n' +
+                        'Host: www.google.com.au\r\n\r\n\r\n' +
+                        '--some_boundary_mocked--',
+                        responseData = '';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(404, responseData);
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: '/api/resource',
+                        method: 'GET',
+                        callback: angular.noop
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
                 });
             });
 

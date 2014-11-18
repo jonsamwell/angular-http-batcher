@@ -1,3 +1,6 @@
+18/11/2014 V1.3.0
+Fixed issue with relative urls
+
 19/09/2014 V1.2.0
 Fixed issue when {cache: true} on requests as the module was returning the headers as an object.  However, it the request is to be cache angular expects the headers to
 be a string.

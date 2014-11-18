@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.2.0 - 2014-09-19
+ * angular-http-batcher - v1.3.0 - 2014-11-18
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2014 Jon Samwell
  */
@@ -152,9 +152,10 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
 
 angular.module(window.ahb.name).factory('httpBatcher', [
     '$injector',
+    '$window',
     '$timeout',
     'httpBatchConfig',
-    function ($injector, $timeout, httpBatchConfig) {
+    function ($injector, $window, $timeout, httpBatchConfig) {
         'use strict';
 
         var constants = {
@@ -376,17 +377,35 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 },
 
                 getUrlInfo = function (url) {
-                    var protocolEndIndex = url.indexOf('://') + 3,
+                    var protocol,
+                        host,
+                        relativeUrl,
+                        protocolEndIndex,
+                        urlParts;
+
+                    if (url.indexOf('://') > -1) {
+                        protocolEndIndex = url.indexOf('://') + 3;
                         urlParts = url.slice(protocolEndIndex).split(constants.forwardSlash);
-                    return {
-                        protocol: url.substring(0, protocolEndIndex),
+                        // we have an absolute url
+                        protocol = url.substring(0, protocolEndIndex);
                         // Get the host portion of the url from '://' to the next'/'
                         // [https://www.somedomain.com/]api/messages
-                        host: urlParts[0],
-                        relativeUrl: (function () {
+                        host = urlParts[0];
+                        relativeUrl = (function () {
                             delete urlParts[0];
                             return urlParts.join(constants.forwardSlash);
-                        }())
+                        }());
+                    } else {
+                        //we have a relative url
+                        relativeUrl = url;
+                        protocol = $window.location.protocol;
+                        host = $window.location.host;
+                    }
+
+                    return {
+                        protocol: protocol,
+                        host: host,
+                        relativeUrl: relativeUrl
                     };
                 },
 
