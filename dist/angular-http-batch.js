@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.3.0 - 2014-11-18
+ * angular-http-batcher - v1.4.0 - 2014-11-19
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2014 Jon Samwell
  */
@@ -255,7 +255,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             headers: {}
                         },
                         responsePart,
-                        i, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
+                        i, j, regex, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
 
                     for (i = 0; i < responseParts.length; i += 1) {
                         responsePart = responseParts[i];
@@ -274,7 +274,17 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             result.statusCode = parseInt(lineParts[1], 10);
                             result.statusText = lineParts.slice(2).join(constants.singleSpace);
                         } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
-                            result.data = convertDataToCorrectType(result.contentType, responsePart);
+                            // need to get all the lines left apart from the last multipart seperator.
+                            result.data = '';
+                            j = 1;
+                            regex = new RegExp('--.*--', 'i');
+                            while (regex.test(responsePart) === false && ((i + j) <= responseParts.length)) {
+                                result.data += responsePart;
+                                responsePart = responseParts[i + j];
+                                j += 1;
+                            }
+
+                            result.data = convertDataToCorrectType(result.contentType, result.data);
                             break;
                         }
                     }

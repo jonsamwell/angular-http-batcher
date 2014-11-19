@@ -334,6 +334,49 @@
                     $httpBackend.flush();
                 });
 
+                it('should parse the response of a single batch request where the data is on multilines', function (done) {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
+                        '[\r\n{\r\n"Name":\r\n"Product 1",\r\n"Id":\r\n1},\r\n{\r\n"Name":\r\n"Product 2",\r\n"Id":\r\n2}\r\n]' +
+                        '\r\n--some_boundary_mocked--\r\n';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+                        'content-type': 'multipart/mixed; boundary="some_boundary_mocked"'
+                    }, 'OK');
+
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        callback: function (statusCode, data, headers, statusText) {
+                            var headerObj = parseHeaders(headers);
+                            expect(statusCode).to.equal(200);
+                            expect(statusText).to.equal('OK');
+
+                            expect(headerObj['content-type']).to.equal('json; charset=utf-8');
+                            expect(data).to.deep.equal([{
+                                Name: 'Product 1',
+                                Id: 1
+                            }, {
+                                Name: 'Product 2',
+                                Id: 2
+                            }]);
+                            done();
+                        }
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
                 it('should parse the response of a single batch request with additional custom headers in the response', function (done) {
                     var batchConfig = {
                             batchEndpointUrl: 'http://www.someservice.com/batch',
