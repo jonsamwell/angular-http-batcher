@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.4.0 - 2014-11-19
+ * angular-http-batcher - v1.5.0 - 2014-11-19
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2014 Jon Samwell
  */
@@ -337,7 +337,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         batchBody.push(constants.emptyString);
 
                         if (request.data) {
-                            batchBody.push(angular.toJson(request.data));
+                            //batchBody.push(angular.toJson(request.data));
+                            batchBody.push(request.data);
                         }
 
                         batchBody.push(constants.emptyString);

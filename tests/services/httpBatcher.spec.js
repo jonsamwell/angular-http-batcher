@@ -132,7 +132,7 @@
                             minimumBatchSize: 1
                         },
                         postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource HTTP/1.1\r\n' +
-                        'Host: www.gogle.com\r\n\r\n"{\\"propOne\\":1,\\"propTwo\\":\\"two\\",\\"propThree\\":3,\\"propFour\\":true}"\r\n\r\n--some_boundary_mocked--',
+                        'Host: www.gogle.com\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}\r\n\r\n--some_boundary_mocked--',
                         responseData = '';
 
                     $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(404, responseData);
@@ -189,7 +189,7 @@
                             minimumBatchSize: 1
                         },
                         postData = '--some_boundary_mocked' +
-                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n"{\\"propOne\\":1,\\"propTwo\\":\\"two\\",\\"propThree\\":3,\\"propFour\\":true}"' +
+                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}' +
                         '\r\n\r\n--some_boundary_mocked' +
                         '\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
                         '\r\n\r\n\r\n--some_boundary_mocked--',
@@ -454,7 +454,7 @@
                             minimumBatchSize: 1
                         },
                         postData = '--some_boundary_mocked' +
-                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n"{\\"propOne\\":1,\\"propTwo\\":\\"two\\",\\"propThree\\":3,\\"propFour\\":true}"' +
+                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}' +
                         '\r\n\r\n--some_boundary_mocked' +
                         '\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
                         '\r\n\r\n\r\n--some_boundary_mocked--',

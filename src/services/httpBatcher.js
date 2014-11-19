@@ -185,7 +185,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         batchBody.push(constants.emptyString);
 
                         if (request.data) {
-                            batchBody.push(angular.toJson(request.data));
+                            //batchBody.push(angular.toJson(request.data));
+                            batchBody.push(request.data);
                         }
 
                         batchBody.push(constants.emptyString);

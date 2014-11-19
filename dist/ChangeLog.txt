@@ -1,3 +1,10 @@
+19/11/2014 V1.5.0
+When batching requests that have request bodies, such as "POST" requests, the standard angular request transforms convert objects into json strings.
+When angular-http-batcher calls angular.toJson again, we end up with a single json string, instead of a json encoding of the object in the batched request.
+So remove this un-necessary call so a json encoding of the object is sent rather than a escaped json string to improve webAPI parameter binding.
+
+So, instead of {"name":"John"} as the body of the request in the batch, you get "{\"name\":\"John\"}" - which causes the parameter binding in Web API to break.
+
 19/11/2014 V1.4.0
 The batch response parser can now handle multi-line json.
 
