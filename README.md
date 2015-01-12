@@ -87,6 +87,7 @@ angular.module('myApp', ['jcs.angular-http-batch']);
              httpBatcher.flush();
          }
 ]);
+```
 
 <h3 id="angular-http-batcher-getting-started-with-asp-web-api">Configuring .Net Web API 2 for Batch Requests</h3>
 
