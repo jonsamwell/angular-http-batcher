@@ -77,17 +77,16 @@ This is undoubtaly the most important option.  As this module tries to be as tra
 The default time in milliseconds the http batcher should wait to collection all request to this domain after the first http call that can be batched has been collect.  This defaults to 100ms.  Therefore if you send a HTTP GET call that can be batched the HTTP batcher will receive this call and wait a further 100ms before sending the call in order to wait for other calls to the same domain in order to add them to the current batch request.  If no other calls are collected the initial HTTP call will be allowed to continue as normal and will not be batched unless the config property - **minimumBatchSize** is set to one.
 
 <h4 id="flushing-all-requests">Immediately flushing all pending requests</h4>
-In some instances you might want to immediately send all pending request regardless of if the request quota or timeout limit has been reached.  To do this you can simply call the flush method on the httpBatchConfigProvider service and optionally pass in the url of the batch endpoint you want to flush (if no parameter is passed in all pending requests to all endpoints are flushed).
+In some instances you might want to immediately send all pending request regardless of if the request quota or timeout limit has been reached.  To do this you can simply call the flush method on the httpBatcher service and optionally pass in the url of the batch endpoint you want to flush (if no parameter is passed in all pending requests to all endpoints are flushed).
 
 ```language-javascript
 angular.module('myApp', ['jcs.angular-http-batch']);
    .run([
-      'httpBatchConfigProvider',
-          function (httpBatchConfigProvider) {
-             httpBatchConfigProvider.flush();
+      'httpBatcher',
+          function (httpBatcher) {
+             httpBatcher.flush();
          }
 ]);
-```
 
 <h3 id="angular-http-batcher-getting-started-with-asp-web-api">Configuring .Net Web API 2 for Batch Requests</h3>
 
