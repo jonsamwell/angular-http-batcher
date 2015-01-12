@@ -1,3 +1,6 @@
+12/01/2015 V1.6.0
+Added a flush method to the httpBatcher service which will immediately send all the pending batch requests regardless of batch quota or time limits being hit.
+
 19/11/2014 V1.5.0
 When batching requests that have request bodies, such as "POST" requests, the standard angular request transforms convert objects into json strings.
 When angular-http-batcher calls angular.toJson again, we end up with a single json string, instead of a json encoding of the object in the batched request.

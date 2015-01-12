@@ -547,6 +547,40 @@
                     $httpBackend.flush();
                 });
             });
+
+            describe('flush', function () {
+                it('should send the batched request before the timeout to send the batch has been reached', function (done) {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 10000,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
+                        '[{"Name":"Product 1","Id":1,"StockQuantity":100},{"Name":"Product 2","Id":2,"StockQuantity":2},{"Name":"Product 3","Id":3,"StockQuantity":32432}]' +
+                        '\r\n--some_boundary_mocked--\r\n';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+                        'content-type': 'multipart/mixed; boundary="some_boundary_mocked"'
+                    }, 'OK');
+
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        callback: function () {
+                            done();
+                        }
+                    });
+
+                    httpBatcher.flush();
+
+                    $httpBackend.flush();
+                });
+            });
         });
     });
 }(angular, sinon));

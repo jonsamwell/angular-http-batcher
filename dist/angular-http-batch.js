@@ -1,7 +1,7 @@
 /*
- * angular-http-batcher - v1.5.0 - 2014-11-19
+ * angular-http-batcher - v1.6.0 - 2015-01-12
  * https://github.com/jonsamwell/angular-http-batcher
- * Copyright (c) 2014 Jon Samwell
+ * Copyright (c) 2015 Jon Samwell
  */
 (function (window, angular) {
         'use strict';
@@ -213,6 +213,15 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 }
 
                 batchRequestManager.addRequest(request);
+            },
+
+            flush = function (batchEndpointUrl) {
+                angular.forEach(currentBatchedRequests, function (val, key) {
+                    var shouldFlush = batchEndpointUrl === undefined || batchEndpointUrl && key.toLocaleLowerCase() === batchEndpointUrl.toLocaleLowerCase();
+                    if (shouldFlush) {
+                        val.flush();
+                    }
+                });
             };
 
         BatchRequestPartParser.prototype = (function () {
@@ -379,12 +388,16 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                     this.requests.push(request);
 
                     if (this.requests.length > this.config.maxBatchedRequestPerCall) {
-                        $timeout.cancel(this.currentTimeoutToken);
-                        this.currentTimeoutToken = undefined;
-                        this.send();
+                        this.flush();
                     }
 
                     return true;
+                },
+
+                flush = function () {
+                    $timeout.cancel(this.currentTimeoutToken);
+                    this.currentTimeoutToken = undefined;
+                    this.send();
                 },
 
                 getUrlInfo = function (url) {
@@ -432,13 +445,15 @@ angular.module(window.ahb.name).factory('httpBatcher', [
 
             return {
                 addRequest: addRequest,
-                send: send
+                send: send,
+                flush: flush
             };
         }());
 
         return {
             canBatchRequest: canBatchRequest,
-            batchRequest: batchRequest
+            batchRequest: batchRequest,
+            flush: flush
         };
     }
 ]);

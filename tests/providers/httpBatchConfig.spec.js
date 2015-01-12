@@ -32,7 +32,7 @@
                         serviceUrl = 'http://www.google.com/someservice/',
                         batchEndpointUrl = 'http://www.google.com/someservice/batch';
                     httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl, {}),
-                        config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
+                    config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
                     expect(config.serviceUrl).to.equal(serviceUrl);
                     expect(config.batchEndpointUrl).to.equal(batchEndpointUrl);
                 });
@@ -42,7 +42,7 @@
                         serviceUrl = 'http://www.google.com/someservice/',
                         batchEndpointUrl = 'http://www.google.com/someservice/batch';
                     httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl, {}),
-                        config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
+                    config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
                     expect(config).to.deep.equal({
                         maxBatchedRequestPerCall: 10,
                         minimumBatchSize: 2,
@@ -58,7 +58,7 @@
                         serviceUrl = 'http://www.google.com/someservice/',
                         batchEndpointUrl = 'http://www.google.com/someservice/batch';
                     httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl),
-                        config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
+                    config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
                     expect(config).to.deep.equal({
                         maxBatchedRequestPerCall: 10,
                         minimumBatchSize: 2,
@@ -74,9 +74,9 @@
                         serviceUrl = 'http://www.google.com/someservice/',
                         batchEndpointUrl = 'http://www.google.com/someservice/batch';
                     httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl, {
-                            maxBatchedRequestPerCall: 2
-                        }),
-                        config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
+                        maxBatchedRequestPerCall: 2
+                    }),
+                    config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
 
                     expect(config.maxBatchedRequestPerCall).to.equal(2);
                 });
