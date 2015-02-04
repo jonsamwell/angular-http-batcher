@@ -8,7 +8,9 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
                 maxBatchedRequestPerCall: 10,
                 minimumBatchSize: 2,
                 batchRequestCollectionDelay: 100,
-                ignoredVerbs: ['head']
+                ignoredVerbs: ['head'],
+				allowRelativeURLs: false,
+				urlMustContain: []
             };
 
         /**
@@ -42,6 +44,9 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          *      request.  If no other calls are collected the initial HTTP call will be allowed to continue as normal and will
          *      not be batched unless the config property - **minimumBatchSize** is set to one.
          *  - **ignoredVerbs** - The HTTP verbs that are ignored and not included in a batch request.  By default only HEAD request are ignored.
+		 *  - **allowRelativeURLs** - This config will be applied to relative URL's. By default this is false
+		 *  - **urlMustContain** - Elements of this array will be checked for partial match in request url. This will allow to only batch some api calls, with this configuration
+		 *		you can prevent batching of static file requests.If this array is empty it will be omitted.
          */
         this.setAllowedBatchEndpoint = function (serviceUrl, batchEndpointUrl, config) {
             var mergedConfiguration = angular.copy(defaultConfiguration);
@@ -75,10 +80,12 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          * @param {string} url The **absolute** url of the request.
          */
         this.getBatchConfig = function (url) {
+			
             var config, i;
             for (i = 0; i < allowedBatchDomains.length; i += 1) {
                 config = allowedBatchDomains[i];
-                if (url.indexOf(config.serviceUrl) > -1) {
+				//no way to check relative url's for matching url - but we will check urlMustContain parameter later
+                if (url.indexOf(config.serviceUrl) > -1 || (config.allowRelativeURLs === true && url.indexOf('http') === -1 && url.indexOf('www') === -1)) {
                     break;
                 } else {
                     config = undefined;
@@ -103,9 +110,25 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          */
         this.canBatchCall = function (url, method) {
             var config = this.getBatchConfig(url);
-            return config !== undefined &&
+            var canBatch = config !== undefined &&
                 config.batchEndpointUrl !== url &&
                 config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
+				
+			if(canBatch && config.urlMustContain.length > 0){
+				var foundMatch = false;
+				for(var i = 0, ii = config.urlMustContain.length; i < ii; i++){
+					if(url.indexOf(config.urlMustContain[i]) > -1){
+						foundMatch = true;
+						break;
+					}
+				}
+				
+				if(!foundMatch){
+					canBatch = false;
+				}
+			}
+			
+			return canBatch;
         };
 
         /**
