@@ -183,8 +183,12 @@ angular.module(window.ahb.name).factory('httpBatcher', [
 
                         batchBody.push(constants.doubleDash + boundary);
                         batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
-
-                        batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
+						if(config.allowRelativeURLs && urlInfo.relativeUrl.indexOf('/') !== 0){
+							batchBody.push(request.method + ' /' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
+						} else {
+							batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
+						}
+                        
                         batchBody.push('Host: ' + urlInfo.host);
 
                         for (header in request.headers) {
