@@ -334,6 +334,43 @@
                     $httpBackend.flush();
                 });
 
+                it('should parse the response of a single batch request which contains --', function (done) {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--',
+                        responseData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8;\r\n\r\n' +
+                        '{"results":[{"BusinessDescription":"Some text here\r\n-------------------"}],"inlineCount":35}' +
+                        '\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--\r\n';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+                        'content-type': 'multipart/mixed; boundary="31fcc127-a593-4e1d-86f3-57e45375848f"'
+                    }, 'OK');
+
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('31fcc127-a593-4e1d-86f3-57e45375848f');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        callback: function (statusCode, data) {
+                            expect(data).to.deep.equal({
+                                results: [{
+                                    BusinessDescription: 'Some text here-------------------'
+                                }],
+                                inlineCount: 35
+                            });
+                            done();
+                        }
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
                 it('should parse the response of a single batch request where the data is on multilines', function (done) {
                     var batchConfig = {
                             batchEndpointUrl: 'http://www.someservice.com/batch',
@@ -545,6 +582,34 @@
 
                     $timeout.flush();
                     $httpBackend.flush();
+                });
+
+                describe('error handling', function () {
+                    it('should handle a 500 response', function (done) {
+                        var batchConfig = {
+                                batchEndpointUrl: 'http://www.someservice.com/batch',
+                                batchRequestCollectionDelay: 200,
+                                minimumBatchSize: 1
+                            },
+                            postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                            responseData = 'Internal Server Error';
+
+                        $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(500, responseData, {}, 'Internal Server Error');
+
+                        sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                        sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                        httpBatcher.batchRequest({
+                            url: 'http://www.gogle.com/resource',
+                            method: 'GET',
+                            callback: function (statusCode, data, headers, statusText) {
+                                done();
+                            }
+                        });
+
+                        $timeout.flush();
+                        $httpBackend.flush();
+                    });
                 });
             });
         });

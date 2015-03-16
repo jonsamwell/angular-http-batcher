@@ -1,7 +1,7 @@
 /*
- * angular-http-batcher - v1.5.0 - 2014-11-19
+ * angular-http-batcher - v1.6.0 - 2015-03-16
  * https://github.com/jonsamwell/angular-http-batcher
- * Copyright (c) 2014 Jon Samwell
+ * Copyright (c) 2015 Jon Samwell
  */
 (function (window, angular) {
         'use strict';
@@ -170,9 +170,10 @@ angular.module(window.ahb.name).factory('httpBatcher', [
 
             currentBatchedRequests = {},
 
-            BatchRequestPartParser = function (part, request) {
+            BatchRequestPartParser = function (part, request, boundaryToken) {
                 this.part = part;
                 this.request = request;
+                this.boundaryToken = boundaryToken;
             },
 
             BatchRequestManager = function (config, sendCallback) {
@@ -277,7 +278,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             // need to get all the lines left apart from the last multipart seperator.
                             result.data = '';
                             j = 1;
-                            regex = new RegExp('--.*--', 'i');
+                            regex = new RegExp('--' + this.boundaryToken + '--', 'i');
                             while (regex.test(responsePart) === false && ((i + j) <= responseParts.length)) {
                                 result.data += responsePart;
                                 responsePart = responseParts[i + j];
@@ -337,7 +338,6 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         batchBody.push(constants.emptyString);
 
                         if (request.data) {
-                            //batchBody.push(angular.toJson(request.data));
                             batchBody.push(request.data);
                         }
 
@@ -363,7 +363,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         for (i = 0; i < parts.length; i += 1) {
                             part = parts[i];
                             if (part !== constants.emptyString) {
-                                responseParser = new BatchRequestPartParser(part, self.requests[responseCount]);
+                                responseParser = new BatchRequestPartParser(part, self.requests[responseCount], boundaryToken);
                                 responseParser.process();
                                 responseCount += 1;
                             }
