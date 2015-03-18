@@ -1,5 +1,8 @@
-16/03/2015 V1.6.0
+16/03/2015 V1.7.0
 Fixed issue with parsing the response string into a json object with having more than two dashes '--' in the returned data.
+
+12/01/2015 V1.6.0
+Added a flush method to the httpBatcher service which will immediately send all the pending batch requests regardless of batch quota or time limits being hit.
 
 19/11/2014 V1.5.0
 When batching requests that have request bodies, such as "POST" requests, the standard angular request transforms convert objects into json strings.
