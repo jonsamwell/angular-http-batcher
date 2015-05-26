@@ -69,6 +69,14 @@
                 });
             });
 
+            var boundaryHeader = function (index) {
+                return boundaryHeaderWithBoundaryX('some_boundary_mocked', index);
+            };
+
+            var boundaryHeaderWithBoundaryX = function (boundaryName, index) {
+                return '--' + boundaryName + '\r\nContent-disposition: form-data; Content-Type: application/http; msgtype=request; name="batchRequest' + index + '"\r\n\r\n';
+            };
+
             describe('batchRequest request creation', function () {
                 it('should call getBatchConfig on httpBatchConfig', function () {
                     sandbox.stub(httpBatchConfig, 'getBatchConfig').returns({
@@ -108,7 +116,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '';
 
                     $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(404, responseData);
@@ -131,7 +139,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource HTTP/1.1\r\n' +
+                        postData = boundaryHeader(0) + 'POST /resource HTTP/1.1\r\n' +
                         'Host: www.gogle.com\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}\r\n\r\n--some_boundary_mocked--',
                         responseData = '';
 
@@ -161,7 +169,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '';
 
                     $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(404, responseData);
@@ -188,10 +196,8 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked' +
-                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}' +
-                        '\r\n\r\n--some_boundary_mocked' +
-                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
+                        postData = boundaryHeader(0) + 'POST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}' +
+                        '\r\n\r\n' + boundaryHeader(1) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
                         '\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '';
 
@@ -262,9 +268,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; ' +
-                        'msgtype=request\r\n\r\n' +
-                        'GET /api/resource HTTP/1.1\r\n' +
+                        postData = boundaryHeader(0) + 'GET /api/resource HTTP/1.1\r\n' +
                         'Host: www.google.com.au\r\n\r\n\r\n' +
                         '--some_boundary_mocked--',
                         responseData = '';
@@ -291,7 +295,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
                         'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
                         '[{"Name":"Product 1","Id":1,"StockQuantity":100},{"Name":"Product 2","Id":2,"StockQuantity":2},{"Name":"Product 3","Id":3,"StockQuantity":32432}]' +
@@ -335,22 +339,23 @@
                 });
 
                 it('should parse the response of a single batch request which contains --', function (done) {
+                    var differentBoundary = '31fcc127-a593-4e1d-86f3-57e45375848f';
                     var batchConfig = {
                             batchEndpointUrl: 'http://www.someservice.com/batch',
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--',
-                        responseData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+                        postData = boundaryHeaderWithBoundaryX(differentBoundary, 0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--' + differentBoundary + '--',
+                        responseData = '--' + differentBoundary + '\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
                         'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8;\r\n\r\n' +
                         '{"results":[{"BusinessDescription":"Some text here\r\n-------------------"}],"inlineCount":35}' +
-                        '\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--\r\n';
+                        '\r\n--' + differentBoundary + '--\r\n';
 
                     $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
-                        'content-type': 'multipart/mixed; boundary="31fcc127-a593-4e1d-86f3-57e45375848f"'
+                        'content-type': 'multipart/mixed; boundary="' + differentBoundary + '"'
                     }, 'OK');
 
-                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('31fcc127-a593-4e1d-86f3-57e45375848f');
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns(differentBoundary);
                     sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
 
                     httpBatcher.batchRequest({
@@ -377,7 +382,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
                         'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
                         '[\r\n{\r\n"Name":\r\n"Product 1",\r\n"Id":\r\n1},\r\n{\r\n"Name":\r\n"Product 2",\r\n"Id":\r\n2}\r\n]' +
@@ -420,7 +425,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
                         'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\nX-SomeHeader: 123AbC\r\nAuthentication: Bonza\r\n\r\n' +
                         '[{"Name":"Product 1","Id":1,"StockQuantity":100},{"Name":"Product 2","Id":2,"StockQuantity":2},{"Name":"Product 3","Id":3,"StockQuantity":32432}]' +
@@ -454,7 +459,7 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
                         'HTTP/1.1 401 UnAuthorised\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
                         '{ "message": "Access Denied" }' +
@@ -490,10 +495,8 @@
                             batchRequestCollectionDelay: 200,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked' +
-                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nPOST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}' +
-                        '\r\n\r\n--some_boundary_mocked' +
-                        '\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
+                        postData = boundaryHeader(0) + 'POST /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\nAuthentication: 123987\r\n\r\n{"propOne":1,"propTwo":"two","propThree":3,"propFour":true}' +
+                        '\r\n\r\n' + boundaryHeader(1) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\nx-custom: data123\r\nAuthentication: 1234567890' +
                         '\r\n\r\n\r\n--some_boundary_mocked--',
 
                         responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
@@ -591,7 +594,7 @@
                                 batchRequestCollectionDelay: 200,
                                 minimumBatchSize: 1
                             },
-                            postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                            postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                             responseData = 'Internal Server Error';
 
                         $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(500, responseData, {}, 'Internal Server Error');
@@ -620,7 +623,7 @@
                             batchRequestCollectionDelay: 10000,
                             minimumBatchSize: 1
                         },
-                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        postData = boundaryHeader(0) + 'GET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
                         responseData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
                         'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
                         '[{"Name":"Product 1","Id":1,"StockQuantity":100},{"Name":"Product 2","Id":2,"StockQuantity":2},{"Name":"Product 3","Id":3,"StockQuantity":32432}]' +

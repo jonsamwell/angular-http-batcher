@@ -172,18 +172,23 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             url: config.batchEndpointUrl,
                             cache: false,
                             headers: {
-                                'Content-Type': 'multipart/mixed; boundary=' + boundary
+                                'Content-Type': 'multipart/mixed; boundary=' + boundary,
+                                //java servlet <= 3.1 parses multipart requests looking for the Content-Disposition header, expecting all multipart requests to include form data
+                                'Content-disposition': 'form-data'
                             }
                         },
                         batchBody = [],
                         urlInfo, i, request, header;
 
-                    for (i = 0; i < requests.length; i += 1) {
+                    var partCount = 0;
+                    for (i = 0; i < requests.length; i += 1, partCount += 1) {
                         request = requests[i];
                         urlInfo = getUrlInfo(request.url);
 
                         batchBody.push(constants.doubleDash + boundary);
-                        batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
+
+                        //Added a name property per part, as java servlet spec <= 3.1 only parses parts with names
+                        batchBody.push('Content-disposition: form-data; Content-Type: application/http; msgtype=request; name="batchRequest' + partCount + '"', constants.emptyString);
 
                         batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
                         batchBody.push('Host: ' + urlInfo.host);
@@ -285,6 +290,12 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                     var boundaryText = 'boundary=',
                         startIndex = contentType.indexOf(boundaryText),
                         boundary = contentType.substring(startIndex + boundaryText.length);
+
+                    // Spring insert charset following the boundry indicator, so trim additional properties if necessary
+                    var indexOfAdditionalArgument = boundary.indexOf(';');
+                    if (indexOfAdditionalArgument > -1) {
+                        boundary = boundary.substring(0, indexOfAdditionalArgument);
+                    }
 
                     // the boundary might be quoted so remove the quotes
                     boundary = boundary.replace(/"/g, constants.emptyString);

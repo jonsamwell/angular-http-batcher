@@ -1,3 +1,6 @@
+23/05/2015 V1.7.1
+Adding support for java servlet spec <= 3.1 and Spring MVC, to deal with the way multipart requests are parsed in Java.
+
 16/03/2015 V1.7.0
 Fixed issue with parsing the response string into a json object with having more than two dashes '--' in the returned data.
 
