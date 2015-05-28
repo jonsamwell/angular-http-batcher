@@ -74,11 +74,11 @@ The smallest number of individual calls allowed in a batch request.  This has a 
 This is a string array of the HTTP verbs that are **not** allowed to form part of a batch request.  By default HEAD requests will not be batched.  If for instance you did not want to batch HEAD and DELETE calls you would pass in this array as an option <code>['head', 'delete']</code>
 
 ####enabled
-True by default.  If this is set to false the batcher will ignore all request and them will be send as normal single HTTP requests.
+True by default.  If this is set to false the batcher will ignore all requests and they will be send as normal single HTTP requests.
 
 ####sendCookies
-False by default to reduce requesst size.  If this is set to true cookies availiable on the document.cookie property will be set
-in each segment of a batch request.  Note that only non HTTPOnly cookie will be sent as HTTPOnly cookies cannot be access by JavaScript
+False by default to reduce request size.  If this is set to true cookies available on the document.cookie property will be set
+in each segment of a batch request.  Note that only non HTTPOnly cookies will be sent as HTTPOnly cookies cannot be access by JavaScript
 because of security limitations.
 
 Note that if you are sending CORS request you will have to enable withCredentials on $http to allow cookies to be sent on the XHR request.
@@ -89,15 +89,17 @@ Note that if you are sending CORS request you will have to enable withCredential
     }]);
 ```
 
-Also ensure the server responses to the OPTIONS call with the below header:
+Also ensure the server responds to the OPTIONS call with the below header:
 
 ```language-csharp
 Access-Control-Allow-Credentials: true
 
+// As an attribute on the controller
 [EnableCors("*", "*", "*", SupportsCredentials=true)]
 
 or
 
+// Comples scenario on the config
 config.EnableCors();
 var defaultPolicyProvider = new EnableCorsAttribute("*", "*", "*");
 defaultPolicyProvider.SupportsCredentials = true; //important if you are sending cookies
