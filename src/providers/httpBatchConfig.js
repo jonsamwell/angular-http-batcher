@@ -8,7 +8,9 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
                 maxBatchedRequestPerCall: 10,
                 minimumBatchSize: 2,
                 batchRequestCollectionDelay: 100,
-                ignoredVerbs: ['head']
+                ignoredVerbs: ['head'],
+                sendCookies: false,
+                enabled: true
             };
 
         /**
@@ -42,6 +44,11 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          *      request.  If no other calls are collected the initial HTTP call will be allowed to continue as normal and will
          *      not be batched unless the config property - **minimumBatchSize** is set to one.
          *  - **ignoredVerbs** - The HTTP verbs that are ignored and not included in a batch request.  By default only HEAD request are ignored.
+         *  - **sendCookies** - True indicates that cookies will be send within each request segment in the batch request.  Note
+         *      only non HTTPOnly cookies can be sent as Javascript cannot access HTTPOnly cookies for security reasons.  This
+         *      property is false by default to reduce request size.
+         *  - **enabled** True indicates batching is enabled.  The default is true.  If the property is false the batcher will
+         *      send request down the normal $http pipeline and request will not be batched.
          */
         this.setAllowedBatchEndpoint = function (serviceUrl, batchEndpointUrl, config) {
             var mergedConfiguration = angular.copy(defaultConfiguration);
@@ -104,6 +111,7 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
         this.canBatchCall = function (url, method) {
             var config = this.getBatchConfig(url);
             return config !== undefined &&
+                config.enabled === true &&
                 config.batchEndpointUrl !== url &&
                 config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
         };
@@ -121,7 +129,6 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
         };
 
         this.$get = [
-
             function () {
                 return this;
             }

@@ -1,6 +1,6 @@
 {
   "name": "angular-http-batcher",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Enables transparent HTTP batch requests with Angular",
   "main": "dist/angular-http-batch.js",
   "keywords": [

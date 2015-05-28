@@ -1,3 +1,9 @@
+29/05/2015 V1.8.0
+Fixed - Number of items in a request is one larger than maxBatchedRequestPerCall
+Added the ability to send non-HTTPOnly cookies in each request segment in a batch request via the sendCookies flag on the
+config object.
+The batcher can now be disabled by setting the enabled config flag to false
+
 16/03/2015 V1.7.0
 Fixed issue with parsing the response string into a json object with having more than two dashes '--' in the returned data.
 

@@ -49,7 +49,9 @@
                         batchRequestCollectionDelay: 100,
                         ignoredVerbs: ['head'],
                         serviceUrl: serviceUrl,
-                        batchEndpointUrl: batchEndpointUrl
+                        batchEndpointUrl: batchEndpointUrl,
+                        enabled: true,
+                        sendCookies: false
                     });
                 });
 
@@ -65,7 +67,9 @@
                         batchRequestCollectionDelay: 100,
                         ignoredVerbs: ['head'],
                         serviceUrl: serviceUrl,
-                        batchEndpointUrl: batchEndpointUrl
+                        batchEndpointUrl: batchEndpointUrl,
+                        enabled: true,
+                        sendCookies: false
                     });
                 });
 

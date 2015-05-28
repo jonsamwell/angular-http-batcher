@@ -8,6 +8,7 @@
 
 <div ng-controller="mainCtrl">
     <button type="button" ng-click="callSingle();">Call Single API Method</button>
+    <button type="button" ng-click="setCookie();">Set Server Cookie</button>
 </div>
 
 <script src="../bower_components/angular/angular.js"></script>
@@ -22,14 +23,19 @@
 <script type="text/javascript">
     var app = angular.module('httpBatchExample', [window.ahb.name]);
 
+    app.config(['$httpProvider', function($httpProvider) {
+        $httpProvider.defaults.withCredentials = true;
+    }]);
+
     app.config([
             'httpBatchConfigProvider',
             function (httpBatchConfigProvider) {
                 httpBatchConfigProvider.setAllowedBatchEndpoint(
-                        'http://fsatnav:8080',
-                        'http://fsatnav:8080/api/batch', {
+                        'http://localhost:8080',
+                        'http://localhost:8080/api/batch', {
                             batchRequestCollectionDelay: 500,
-                            minimumBatchSize: 1
+                            minimumBatchSize: 2,
+                            sendCookies: true
                         });
             }
     ]);
@@ -38,17 +44,31 @@
         '$scope',
         '$http',
     function ($scope, $http) {
+        $scope.setCookie = function() {
+            $http.get('http://localhost:8080/api/products/cookie/set', { cache: true }).then(function (data) {
+                console.log('Cookie set - ' + data.data);
+            }, function (err) {
+                console.log('Failed to set cookie - ' + angular.toJson(err));
+            });
+        };
+
         $scope.callSingle = function () {
-//            $http.get('http://localhost:8080/api/products', { cache: true }).then(function (data) {
-//                console.log('success 0 - ' + data.data);
-//            }, function (err) {
-//                console.log('error 0 - ' + err);
-//            });
+            $http.get('http://localhost:8080/api/products', { cache: true }).then(function (data) {
+                console.log('success 0 - ' + data.data);
+            }, function (err) {
+                console.log('error 0 - ' + angular.toJson(err));
+            });
+
+            $http.get('http://localhost:8080/api/products', { cache: true }).then(function (data) {
+                console.log('success 0 - ' + data.data);
+            }, function (err) {
+                console.log('error 0 - ' + angular.toJson(err));
+            });
 
             $http.get('http://localhost:8080/api/products/2').then(function (data) {
                 console.log('success 1 - ' + data.data);
             }, function (err) {
-                console.log('error 1 - ' + err);
+                console.log('error 1 - ' + angular.toJson(err));
             });
 
             var promise = $http.put('http://localhost:8080/api/products', {
@@ -56,17 +76,14 @@
                 StockQuantity: 300
             });
 
-            debugger;
-
             promise.catch(function (data) {
-                debugger;
                 console.log('balls');
             });
 
             promise.then(function (data) {
                 console.log('success 2 - ' + data.data);
             }, function (err) {
-                console.log('error 2 - ' + angular.fromJson(err));
+                console.log('error 2 - ' + angular.toJson(err));
             });
         };
     }]);

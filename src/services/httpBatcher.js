@@ -1,9 +1,10 @@
 angular.module(window.ahb.name).factory('httpBatcher', [
     '$injector',
+    '$document',
     '$window',
     '$timeout',
     'httpBatchConfig',
-    function ($injector, $window, $timeout, httpBatchConfig) {
+    function ($injector, $document, $window, $timeout, httpBatchConfig) {
         'use strict';
 
         var constants = {
@@ -192,6 +193,10 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             batchBody.push(header + ': ' + request.headers[header]);
                         }
 
+                        if (config.sendCookies === true && $document[0].cookie && $document[0].cookie.length > 0) {
+                            batchBody.push('Cookie: ' + $document[0].cookie);
+                        }
+
                         batchBody.push(constants.emptyString);
 
                         if (request.data) {
@@ -235,7 +240,7 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 addRequest = function (request) {
                     this.requests.push(request);
 
-                    if (this.requests.length > this.config.maxBatchedRequestPerCall) {
+                    if (this.requests.length >= this.config.maxBatchedRequestPerCall) {
                         this.flush();
                     }
 
