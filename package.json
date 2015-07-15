@@ -1,6 +1,6 @@
 {
   "name": "angular-http-batcher",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Enables transparent HTTP batch requests with Angular",
   "main": "angular-http-batcher.min.js",
   "scripts": {
@@ -48,10 +48,10 @@
     "sinon": "^1.10.2"
   },
   "ignore": [
-      "**/.*",
-      "node_modules",
-      "bower_components",
-      "tests",
-      "reports"
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "tests",
+    "reports"
   ]
 }

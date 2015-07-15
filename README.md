@@ -60,7 +60,8 @@ The setAllowedBatchEndpoint has some options that can be passed in as a third pa
 	batchRequestCollectionDelay: 100,
 	ignoredVerbs: ['head'],
     sendCookies: false,
-    enabled: true
+    enabled: true.
+
 }
 ```
 
@@ -75,6 +76,39 @@ This is a string array of the HTTP verbs that are **not** allowed to form part o
 
 ####enabled
 True by default.  If this is set to false the batcher will ignore all requests and they will be send as normal single HTTP requests.
+
+####canBatchRequest
+An optional function which determines if the request can be batched - if present this overrides the default mechanism used by the library.  It takes in the url and http method of a pending request and returns true if this request can be batched otherwise false.
+
+For example:
+
+```language-javascript
+    function(url, method) {
+      return url.indexOf('user') && method.toLowerCase() === 'get';
+    }
+```
+
+####batchRequestHeaders
+
+An optional object of header keys and values that will be added to a batched request header's before sending to the server.
+For instance java servlet <= 3.1 parses multipart requests looking for the Content-Disposition header, expecting all multipart requests to include form data
+
+{
+    batchRequestHeaders: {'Content-disposition': 'form-data'}
+}
+
+See notes on running this with java servlet <= 3.1
+
+####batchPartRequestHeaders
+
+An optional object of header keys and values that will be added to each batched request part header's before sending to the server.
+For instance java servlet <= 3.1 parses multipart requests looking for the Content-Disposition header, expecting all multipart requests to include form data
+
+{
+    batchPartRequestHeaders: {'Content-disposition': 'form-data'}
+}
+
+See notes on running this with java servlet <= 3.1
 
 ####sendCookies
 False by default to reduce request size.  If this is set to true cookies available on the document.cookie property will be set
@@ -143,3 +177,14 @@ configuration.Routes.MapHttpBatchRoute(
         routeTemplate:"api/batch",
         batchHandler:new DefaultHttpBatchHandler(server));
 ```
+
+<h4 id="running-with-java-servlet-3-1">Configuring for Java Servlet <= 3.1</h4>
+Java Servlet <= 3.1 parses multipart requests looking for the Content-Disposition header, expecting all multipart requests to include form data.
+It also expects a content disposition header per request part in the batch.
+
+Therefore you will need to setup the library to do this.  Add the below to your config object when initialising the batch endpoint.
+
+{
+    batchRequestHeaders: {'Content-disposition': 'form-data'}
+    batchPartRequestHeaders: {'Content-disposition': 'form-data'}
+}

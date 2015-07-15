@@ -172,25 +172,31 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                             method: 'POST',
                             url: config.batchEndpointUrl,
                             cache: false,
-                            headers: {
-                                'Content-Type': 'multipart/mixed; boundary=' + boundary
-                            }
+                            headers: config.batchRequestHeaders || {}
                         },
                         batchBody = [],
                         urlInfo, i, request, header;
+
+                    httpConfig.headers['Content-Type'] = 'multipart/mixed; boundary=' + boundary;
 
                     for (i = 0; i < requests.length; i += 1) {
                         request = requests[i];
                         urlInfo = getUrlInfo(request.url);
 
                         batchBody.push(constants.doubleDash + boundary);
+                        if (config.batchPartRequestHeaders) {
+                            for (header in config.batchPartRequestHeaders) {
+                                batchBody.push(header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header]);
+                            }
+                        }
+
                         batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
 
                         batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
                         batchBody.push('Host: ' + urlInfo.host);
 
                         for (header in request.headers) {
-                            batchBody.push(header + ': ' + request.headers[header]);
+                            batchBody.push(header + constants.colon + constants.singleSpace + request.headers[header]);
                         }
 
                         if (config.sendCookies === true && $document[0].cookie && $document[0].cookie.length > 0) {

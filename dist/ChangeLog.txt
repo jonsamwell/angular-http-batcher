@@ -1,3 +1,9 @@
+15/07/2015 V1.9.0
+A function can now be added to the config object to override the default mechanism used to determine if a call should be batched.
+Add a canBatchRequest function to the config object which takes in a url and http method type and return true if the call can be batched.
+Add the ability to specify additional header to be added to the batch request and each individual batch request part.  This is to improve
+compatibly with java servlet <=3.1 where it needs a content disposition header to parse the request.
+
 29/05/2015 V1.8.0
 Fixed - Number of items in a request is one larger than maxBatchedRequestPerCall
 Added the ability to send non-HTTPOnly cookies in each request segment in a batch request via the sendCookies flag on the

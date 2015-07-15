@@ -49,6 +49,10 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          *      property is false by default to reduce request size.
          *  - **enabled** True indicates batching is enabled.  The default is true.  If the property is false the batcher will
          *      send request down the normal $http pipeline and request will not be batched.
+         *  - **canBatchRequest** - An optional function which determines if the request can be batched.  It takes in the url
+         *      and http method of a pending request and returns true if this request can be batched otherwise false.
+         *  - **batchRequestHeaders** - An optional object of header keys and values that will be added to a batched request header's before
+         *    sending to the server.
          */
         this.setAllowedBatchEndpoint = function (serviceUrl, batchEndpointUrl, config) {
             var mergedConfiguration = angular.copy(defaultConfiguration);
@@ -105,15 +109,26 @@ angular.module(window.ahb.name).provider('httpBatchConfig', [
          * Determines if the given request is to a endpoint that accepts HTTP batch messages and the
          * HTTP verb is valid in the batch configuration of the endpoint given in the method 'setAllowedBatchEndpoint'.
          *
+         * If the config property canBatchRequest is a function it is invoke here instead of the default library checks.
+         *
          * @param {string} url The **absolute** url of the request.
          * @param {string} method The HTTP verb of the request i.e. POST
          */
         this.canBatchCall = function (url, method) {
-            var config = this.getBatchConfig(url);
-            return config !== undefined &&
-                config.enabled === true &&
-                config.batchEndpointUrl !== url &&
-                config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
+            var config = this.getBatchConfig(url),
+                canBatchRequestFn = config ? config.canBatchRequest : undefined,
+                canBatch = false;
+
+            if (config && config.enabled === true) {
+                if (canBatchRequestFn) {
+                    canBatch = canBatchRequestFn(url, method);
+                } else {
+                    canBatch = config.batchEndpointUrl !== url &&
+                        config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
+                }
+            }
+
+            return canBatch;
         };
 
         /**

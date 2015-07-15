@@ -115,6 +115,29 @@
 
                     expect(canCall).to.equal(false);
                 });
+
+                it('should return false if batching is not enabled', function () {
+                    var canCall;
+                    httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch', {
+                        enabled: false
+                    });
+                    canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/some-resource', 'GET');
+
+                    expect(canCall).to.equal(false);
+                });
+
+                it('should return true if the canBatchRequest function returns true on the config object', function () {
+                    var canCall;
+                    httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch', {
+                        ignoredVerbs: ['GET'],
+                        canBatchRequest: function (url, method) {
+                            return true;
+                        }
+                    });
+                    canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/some-resource', 'GET');
+
+                    expect(canCall).to.equal(true);
+                });
             });
 
             describe('getBatchConfig', function () {

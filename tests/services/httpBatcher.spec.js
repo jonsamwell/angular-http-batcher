@@ -125,6 +125,65 @@
                     $httpBackend.flush();
                 });
 
+                it('should add additional headers to the batch request as defined in the config object', function () {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1,
+                            batchRequestHeaders: {
+                                'Content-disposition': 'form-data'
+                            }
+                        },
+                        responseData = '';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, undefined, function (headers) {
+                        return headers['Content-disposition'] === 'form-data';
+                    }).respond(404, responseData);
+
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        callback: angular.noop
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
+                it('should create the correct http post data for a single GET request with additional headers', function () {
+                    var batchConfig = {
+                            batchEndpointUrl: 'http://www.someservice.com/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1,
+                            batchRequestHeaders: {
+                                'Content-disposition': 'form-data'
+                            },
+                            batchPartRequestHeaders: {
+                                'Content-disposition': 'form-data'
+                            }
+                        },
+                        postData = '--some_boundary_mocked\r\nContent-disposition: form-data\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--some_boundary_mocked--',
+                        responseData = '';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData, function (headers) {
+                        return headers['Content-disposition'] === 'form-data';
+                    }).respond(404, responseData);
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: 'http://www.gogle.com/resource',
+                        method: 'GET',
+                        callback: angular.noop
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
                 it('should create the correct http post data for a single POST request', function () {
                     var batchConfig = {
                             batchEndpointUrl: 'http://www.someservice.com/batch',
