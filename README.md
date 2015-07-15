@@ -184,7 +184,9 @@ It also expects a content disposition header per request part in the batch.
 
 Therefore you will need to setup the library to do this.  Add the below to your config object when initialising the batch endpoint.
 
+```language-javascript
 {
-    batchRequestHeaders: {'Content-disposition': 'form-data'}
+    batchRequestHeaders: {'Content-disposition': 'form-data'},
     batchPartRequestHeaders: {'Content-disposition': 'form-data'}
 }
+```
