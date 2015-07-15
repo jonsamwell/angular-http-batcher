@@ -125,6 +125,30 @@
                     $httpBackend.flush();
                 });
 
+
+                it('should create the correct http post data for a complex relative url GET request', function () {
+                    var batchConfig = {
+                            batchEndpointUrl: 'api/batch',
+                            batchRequestCollectionDelay: 200,
+                            minimumBatchSize: 1
+                        },
+                        postData = '--some_boundary_mocked\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--some_boundary_mocked--',
+                        responseData = '';
+
+                    $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(404, responseData);
+                    sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('some_boundary_mocked');
+                    sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+                    httpBatcher.batchRequest({
+                        url: './resource',
+                        method: 'GET',
+                        callback: angular.noop
+                    });
+
+                    $timeout.flush();
+                    $httpBackend.flush();
+                });
+
                 it('should add additional headers to the batch request as defined in the config object', function () {
                     var batchConfig = {
                             batchEndpointUrl: 'http://www.someservice.com/batch',

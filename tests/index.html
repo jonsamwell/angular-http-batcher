@@ -9,6 +9,7 @@
 <div ng-controller="mainCtrl">
     <button type="button" ng-click="callSingle();">Call Single API Method</button>
     <button type="button" ng-click="setCookie();">Set Server Cookie</button>
+    <button type="button" ng-click="tryRelativeUrl();">Try Relative Url</button>
 </div>
 
 <script src="../bower_components/angular/angular.js"></script>
@@ -34,8 +35,19 @@
                         'http://localhost:8080',
                         'http://localhost:8080/api/batch', {
                             batchRequestCollectionDelay: 500,
-                            minimumBatchSize: 2,
+                            minimumBatchSize: 1,
                             sendCookies: true
+                        });
+                // relative endpoint
+                httpBatchConfigProvider.setAllowedBatchEndpoint(
+                        './',
+                        'http://localhost:60000/api/batch', {
+                            batchRequestCollectionDelay: 500,
+                            minimumBatchSize: 1,
+                            sendCookies: true,
+                            canBatchRequest: function() {
+                                return true;
+                            }
                         });
             }
     ]);
@@ -86,6 +98,15 @@
                 console.log('error 2 - ' + angular.toJson(err));
             });
         };
+
+        $scope.tryRelativeUrl = function() {
+            debugger;
+            $http.get('./api/products').then(function (data) {
+                console.log('success 0 - ' + data.data);
+            }, function (err) {
+                console.log('error 0 - ' + angular.toJson(err));
+            });
+        }
     }]);
 </script>
 

@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.9.0 - 2015-07-15
+ * angular-http-batcher - v1.10.0 - 2015-07-15
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2015 Jon Samwell
  */
@@ -439,6 +439,13 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         relativeUrl,
                         protocolEndIndex,
                         urlParts;
+
+                    if (url.indexOf('./') > -1 || url.indexOf('../') > -1) {
+                        // we have a complex relative url i.e. './api/products' or '../api/products
+                        var parser = document.createElement('a');
+                        parser.href = url;
+                        url = parser.href;
+                    }
 
                     if (url.indexOf('://') > -1) {
                         protocolEndIndex = url.indexOf('://') + 3;

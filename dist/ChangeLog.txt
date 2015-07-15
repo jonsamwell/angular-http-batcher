@@ -1,3 +1,6 @@
+15/07/2015 V1.10.0
+Added support for complex relative urls i.e. './api/products' or '../api/products'
+
 15/07/2015 V1.9.0
 A function can now be added to the config object to override the default mechanism used to determine if a call should be batched.
 Add a canBatchRequest function to the config object which takes in a url and http method type and return true if the call can be batched.

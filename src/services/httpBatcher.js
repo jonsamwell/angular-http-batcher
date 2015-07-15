@@ -266,6 +266,13 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                         protocolEndIndex,
                         urlParts;
 
+                    if (url.indexOf('./') > -1 || url.indexOf('../') > -1) {
+                        // we have a complex relative url i.e. './api/products' or '../api/products
+                        var parser = document.createElement('a');
+                        parser.href = url;
+                        url = parser.href;
+                    }
+
                     if (url.indexOf('://') > -1) {
                         protocolEndIndex = url.indexOf('://') + 3;
                         urlParts = url.slice(protocolEndIndex).split(constants.forwardSlash);
