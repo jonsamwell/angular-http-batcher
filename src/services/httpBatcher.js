@@ -14,7 +14,8 @@ angular.module(window.ahb.name).factory('httpBatcher', [
                 singleSpace: ' ',
                 forwardSlash: '/',
                 doubleDash: '--',
-                colon: ':'
+                colon: ':',
+                jsonPrefix: ')]}\',\n'
             },
 
             currentBatchedRequests = {},
@@ -81,6 +82,13 @@ angular.module(window.ahb.name).factory('httpBatcher', [
 
                     // what other types should we support? XML maybe?
                     if (contentType.indexOf('json') > -1) {
+
+                        if (dataStr && angular.isString(dataStr)) {
+                            var trimmedString = dataStr.trim();
+                            if (trimmedString.substring(0, constants.jsonPrefix.length) === constants.jsonPrefix) {
+                                dataStr = trimmedString.substring(constants.jsonPrefix.length); // trim the prefix off
+                            }
+                        }
                         data = angular.fromJson(dataStr);
                     }
 
