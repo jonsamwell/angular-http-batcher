@@ -50,7 +50,7 @@
                         evalCode: false,
                         indentChar: " ",
                         indentLevel: 0,
-                        indentSize: 4,
+                        indentSize: 2,
                         indentWithTabs: false,
                         jslintHappy: true,
                         keepArrayIndentation: false,

@@ -29,7 +29,7 @@ namespace WebApiHttpBatchServer
                 routeTemplate: "api/batch",
                 defaults: null,
                 constraints: null,
-                handler: new CorsMessageHandler(config) { InnerHandler = new DefaultHttpBatchHandler(GlobalConfiguration.DefaultServer) });
+                handler: new DefaultHttpBatchHandler(GlobalConfiguration.DefaultServer));
             
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",

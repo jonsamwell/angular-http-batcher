@@ -73,6 +73,8 @@ shared.files = [
     'src/angular-http-batch.js',
     'src/providers/httpBatchConfig.js',
     'src/services/httpBatcher.js',
+    'src/services/adapters/httpBatchResponseData.js',
+    'src/services/adapters/httpAdapter.js',
     'src/config/httpBackendDecorator.js'
 ];
 

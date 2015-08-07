@@ -1,2 +1,2 @@
 (function (window, angular) {
-        'use strict';
+    'use strict';
