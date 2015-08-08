@@ -7,7 +7,11 @@ app.get('/', function(req, res) {
 	res.send('Try /foo or /bar.');
 });
 
-app.get('/batch', multifetch());
+app.get('/batch', multifetch({
+	headers: {
+		'dsds': 'sdsd'
+	}
+}));
 
 app.get('/foo', function(req, res) {
 	res.send({message:'Foo!'});
