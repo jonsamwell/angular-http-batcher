@@ -1,14 +1,19 @@
 (function (angular, sinon) {
   'use strict';
-  describe('httpBatchConfig', function () {
-    var sandbox, httpBatchConfig;
+
+  describe('httpAdapter', function () {
+    var sandbox, httpBatchConfig, httpAdapter,
+      boundaryText = 'boundary123';
 
     beforeEach(module(window.ahb.name));
 
-    describe('httpBatchConfig', function () {
+    describe('httpAdapter', function () {
       beforeEach(inject(function ($injector) {
         sandbox = sinon.sandbox.create();
+        httpAdapter = $injector.get('httpBatchAdapter');
         httpBatchConfig = $injector.get('httpBatchConfig');
+
+        sandbox.stub(httpBatchConfig, 'calculateBoundary').returns(boundaryText);
       }));
 
       afterEach(function () {
@@ -16,143 +21,145 @@
       });
 
       it('should be defined', function () {
-        expect(httpBatchConfig).to.exist;
+        expect(httpAdapter).to.exist;
       });
 
-      describe('calculateBoundary', function () {
-        it('should return a string', function () {
-          var boundary = httpBatchConfig.calculateBoundary();
-          expect(typeof boundary === 'string').to.equal(true);
-        });
-      });
+      describe('buildRequest', function () {
+        it('should build the correct request for a single GET request', function () {
+          var rawRequest = {
+              url: 'api/some-method?params=123',
+              method: 'GET'
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl'
+            };
 
-      describe('setAllowedBatchEndpoint', function () {
-        it('should add the service and batch endpoint url to the config object', function () {
-          var config,
-            serviceUrl = 'http://www.google.com/someservice/',
-            batchEndpointUrl = 'http://www.google.com/someservice/batch';
-          httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl, {}),
-            config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
-          expect(config.serviceUrl).to.equal(serviceUrl);
-          expect(config.batchEndpointUrl).to.equal(batchEndpointUrl);
-        });
+          var result = httpAdapter.buildRequest([rawRequest], config);
 
-        it('should populate defaults on the config object if they are not present', function () {
-          var config,
-            serviceUrl = 'http://www.google.com/someservice/',
-            batchEndpointUrl = 'http://www.google.com/someservice/batch';
-          httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl, {}),
-            config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
-          expect(config).to.deep.equal({
-            maxBatchedRequestPerCall: 10,
-            minimumBatchSize: 2,
-            batchRequestCollectionDelay: 100,
-            ignoredVerbs: ['head'],
-            serviceUrl: serviceUrl,
-            batchEndpointUrl: batchEndpointUrl,
-            enabled: true,
-            sendCookies: false,
-            adapter: 'httpBatchAdapter'
-          });
+          expect(result.method).to.equal('POST');
+          expect(result.url).to.equal(config.batchEndpointUrl);
+          expect(result.cache).to.equal(false);
+          expect(result.data).to.equal('--boundary123\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'GET api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
         });
 
-        it('should populate defaults on the config object if a config object is not provided', function () {
-          var config,
-            serviceUrl = 'http://www.google.com/someservice/',
-            batchEndpointUrl = 'http://www.google.com/someservice/batch';
-          httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl),
-            config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
-          expect(config).to.deep.equal({
-            maxBatchedRequestPerCall: 10,
-            minimumBatchSize: 2,
-            batchRequestCollectionDelay: 100,
-            ignoredVerbs: ['head'],
-            serviceUrl: serviceUrl,
-            batchEndpointUrl: batchEndpointUrl,
-            enabled: true,
-            sendCookies: false,
-            adapter: 'httpBatchAdapter'
-          });
+        it('should build the correct request for a single POST request', function () {
+          var rawRequest = {
+              url: 'api/some-method?params=123',
+              method: 'POST',
+              data: angular.toJson({
+                id: 1,
+                name: 'jon'
+              })
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl'
+            };
+
+          var result = httpAdapter.buildRequest([rawRequest], config);
+
+          expect(result.method).to.equal('POST');
+          expect(result.url).to.equal(config.batchEndpointUrl);
+          expect(result.cache).to.equal(false);
+          expect(result.data).to.equal('--boundary123\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'POST api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n' +
+            '{"id":1,"name":"jon"}\r\n\r\n--boundary123--');
         });
 
-        it('should not overwrite properties on the config object with the defaults', function () {
-          var config,
-            serviceUrl = 'http://www.google.com/someservice/',
-            batchEndpointUrl = 'http://www.google.com/someservice/batch';
-          httpBatchConfig.setAllowedBatchEndpoint(serviceUrl, batchEndpointUrl, {
-              maxBatchedRequestPerCall: 2
-            }),
-            config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/someresource');
+        it('should build the correct request for a multiple requests', function () {
+          var rawRequestOne = {
+              url: 'api/some-method?params=123',
+              method: 'POST',
+              data: angular.toJson({
+                id: 1,
+                name: 'jon'
+              })
+            },
+            rawRequestTwo = {
+              url: 'api/some-method?params=123',
+              method: 'GET'
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl'
+            };
 
-          expect(config.maxBatchedRequestPerCall).to.equal(2);
-        });
-      });
+          var result = httpAdapter.buildRequest([rawRequestOne, rawRequestTwo], config);
 
-      describe('canBatchCall', function () {
-        it('should return true url is a derivative of the registered batch endpoint', function () {
-          httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch');
-          var canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/someresource/1', 'GET');
-          expect(canCall).to.equal(true);
-        });
-
-        it('should return false if no endpoints have been configured as batch endpoints', function () {
-          var canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/something', 'GET');
-          expect(canCall).to.equal(false);
-        });
-
-        it('should return false if the given url is the url of the batch endpoint', function () {
-          var canCall;
-          httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch');
-          canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/batch', 'GET');
-
-          expect(canCall).to.equal(false);
+          expect(result.method).to.equal('POST');
+          expect(result.url).to.equal(config.batchEndpointUrl);
+          expect(result.cache).to.equal(false);
+          expect(result.data).to.equal('--boundary123\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'POST api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n{"id":1,"name":"jon"}\r\n\r\n' +
+            '--boundary123\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'GET api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
         });
 
-        it('should return false if the given http verb is not allowed to be batched', function () {
-          var canCall;
-          httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch', {
-            ignoredVerbs: ['GET']
-          });
-          canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/some-resource', 'GET');
+        it('should build the correct request that includes custom headers', function () {
+          var rawRequest = {
+              url: 'api/some-method?params=123',
+              method: 'GET'
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl',
+              batchRequestHeaders: {
+                'Content-disposition': 'form-data'
+              },
+              batchPartRequestHeaders: {
+                'Content-disposition': 'form-data'
+              }
+            };
 
-          expect(canCall).to.equal(false);
-        });
+          var result = httpAdapter.buildRequest([rawRequest], config);
 
-        it('should return false if batching is not enabled', function () {
-          var canCall;
-          httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch', {
-            enabled: false
-          });
-          canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/some-resource', 'GET');
-
-          expect(canCall).to.equal(false);
-        });
-
-        it('should return true if the canBatchRequest function returns true on the config object', function () {
-          var canCall;
-          httpBatchConfig.setAllowedBatchEndpoint('http://www.google.com/someservice/', 'http://www.google.com/someservice/batch', {
-            ignoredVerbs: ['GET'],
-            canBatchRequest: function (url, method) {
-              return true;
-            }
-          });
-          canCall = httpBatchConfig.canBatchCall('http://www.google.com/someservice/some-resource', 'GET');
-
-          expect(canCall).to.equal(true);
+          expect(result.method).to.equal('POST');
+          expect(result.url).to.equal(config.batchEndpointUrl);
+          expect(result.cache).to.equal(false);
+          expect(result.headers['Content-Type']).to.equal('multipart/mixed; boundary=boundary123');
+          expect(result.headers['Content-disposition']).to.equal('form-data');
+          expect(result.data).to.equal('--boundary123\r\nContent-disposition: form-data\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'GET api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
         });
       });
 
-      describe('getBatchConfig', function () {
-        it('should return undefined if no matching batch endpoint have been configured', function () {
-          var config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/something');
-          expect(config).to.equal(undefined);
-        });
+      describe('parseResponse', function () {
+        it('should parse a single response', function () {
+          var rawRequest = {
+              url: 'api/some-method?params=123',
+              method: 'GET'
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl'
+            },
+            responseData = '--boundary123\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+            'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n' +
+            '[{"Name":"Product 1","Id":1,"StockQuantity":100},{"Name":"Product 2","Id":2,"StockQuantity":2},{"Name":"Product 3","Id":3,"StockQuantity":32432}]' +
+            '\r\n--boundary123--\r\n',
+            response = {
+              data: responseData,
+              headers: function () {
+                return {
+                  'content-type': 'multipart/mixed; boundary="boundary123"'
+                };
+              }
+            };
 
-        it('should return undefined if the given url has no matching batch endpoint configured', function () {
-          var config;
-          httpBatchConfig.setAllowedBatchEndpoint('serviceUrl', 'serviceUrl/batch');
-          config = httpBatchConfig.getBatchConfig('http://www.google.com/someservice/something');
-          expect(config).to.equal(undefined);
+          var results = httpAdapter.parseResponse([rawRequest], response, config);
+
+          expect(results.length).to.equal(1);
+          expect(results[0].request).to.deep.equal(rawRequest);
+          expect(results[0].statusCode).to.equal(200);
+          expect(results[0].statusText).to.equal('OK');
+          expect(results[0].headers['Content-Type']).to.equal('json; charset=utf-8');
+          expect(results[0].data.length).to.equal(3);
+          expect(results[0].data[0].Id).to.equal(1);
+          expect(results[0].data[1].Id).to.equal(2);
+          expect(results[0].data[2].Id).to.equal(3);
+        });
+      });
+
+      describe('canBatchRequest', function () {
+        it('should return true', function () {
+          expect(httpAdapter.canBatchRequest()).to.equal(true);
         });
       });
     });

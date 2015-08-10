@@ -22,6 +22,7 @@
 <script src="../src/services/httpBatcher.js"></script>
 <script src="../src/services/adapters/httpBatchResponseData.js"></script>
 <script src="../src/services/adapters/httpAdapter.js"></script>
+<script src="../src/services/adapters/nodeJsMultiFetchAdapter.js"></script>
 <script src="../src/config/httpBackendDecorator.js"></script>
 
 <script type="text/javascript">
@@ -37,7 +38,7 @@
                 httpBatchConfigProvider.setAllowedBatchEndpoint(
                         'http://localhost:8080',
                         'http://localhost:8080/api/batch', {
-                            batchRequestCollectionDelay: 1500,
+                            batchRequestCollectionDelay: 500,
                             minimumBatchSize: 1,
                             sendCookies: true
                         });

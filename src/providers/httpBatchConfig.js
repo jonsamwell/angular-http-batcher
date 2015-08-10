@@ -124,6 +124,7 @@ function HttpBatchConfigFn() {
         canBatch = canBatchRequestFn(url, method);
       } else {
         canBatch = config.batchEndpointUrl !== url &&
+          url.indexOf(config.batchEndpointUrl) === -1 &&
           config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
       }
     }

@@ -53,15 +53,14 @@ The root endpoint url is simply the base address of your api and the endpoint ba
 
 The setAllowedBatchEndpoint has some options that can be passed in as a third paramter to the call which are explained below.
 
-```langauge-javscript
+```language-javascript
 {
 	maxBatchedRequestPerCall: 10,
 	minimumBatchSize: 2,
 	batchRequestCollectionDelay: 100,
 	ignoredVerbs: ['head'],
     sendCookies: false,
-    enabled: true.
-
+    enabled: true
 }
 ```
 

@@ -75,6 +75,7 @@ shared.files = [
     'src/services/httpBatcher.js',
     'src/services/adapters/httpBatchResponseData.js',
     'src/services/adapters/httpAdapter.js',
+    'src/services/adapters/nodeJsMultiFetchAdapter.js',
     'src/config/httpBackendDecorator.js'
 ];
 

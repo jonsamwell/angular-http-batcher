@@ -1,17 +1,7 @@
-function HttpBatchAdapter($document, $window, httpBatchConfig) {
-  var self = this,
-    constants = {
-      httpVersion: 'HTTP/1.1',
-      contentType: 'Content-Type',
-      newline: '\r\n',
-      emptyString: '',
-      singleSpace: ' ',
-      forwardSlash: '/',
-      doubleDash: '--',
-      colon: ':'
-    };
+function NodeJsMultiFetchAdapter() {
+  var self = this;
 
-  self.key = 'httpBatchAdapter';
+  self.key = 'nodeJsMultiFetchAdapter';
   self.buildRequest = buildRequestFn;
   self.parseResponse = parseResponseFn;
   self.canBatchRequest = canBatchRequestFn;
@@ -28,53 +18,31 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
    * @returns {object} - a http config object.
    */
   function buildRequestFn(requests, config) {
-    var boundary = httpBatchConfig.calculateBoundary(),
-      httpConfig = {
-        method: 'POST',
-        url: config.batchEndpointUrl,
+    var httpConfig = {
+        method: 'GET',
+        url: config.batchEndpointUrl + '?',
         cache: false,
         headers: config.batchRequestHeaders || {}
       },
-      batchBody = [],
-      urlInfo, i, request, header;
-
-    httpConfig.headers[constants.contentType] = 'multipart/mixed; boundary=' + boundary;
+      encodedUrl, i, request,
+      urlParts;
 
     for (i = 0; i < requests.length; i += 1) {
       request = requests[i];
-      urlInfo = getUrlInfo(request.url);
+      urlParts = request.url.split('?');
 
-      batchBody.push(constants.doubleDash + boundary);
-      if (config.batchPartRequestHeaders) {
-        for (header in config.batchPartRequestHeaders) {
-          batchBody.push(header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header]);
-        }
+      encodedUrl = urlParts[0].replace(config.serviceUrl, '');
+      if (urlParts.length > 1) {
+        encodedUrl += '?' + encodeURIComponent(urlParts[1]);
       }
 
-      batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
-
-      batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
-      batchBody.push('Host: ' + urlInfo.host);
-
-      for (header in request.headers) {
-        batchBody.push(header + constants.colon + constants.singleSpace + request.headers[header]);
+      if (i > 0) {
+        httpConfig.url += '&';
       }
 
-      if (config.sendCookies === true && $document[0].cookie && $document[0].cookie.length > 0) {
-        batchBody.push('Cookie: ' + $document[0].cookie);
-      }
-
-      batchBody.push(constants.emptyString);
-
-      if (request.data) {
-        batchBody.push(request.data);
-      }
-
-      batchBody.push(constants.emptyString);
+      httpConfig.url += i.toString() + '=' + encodedUrl;
     }
 
-    batchBody.push(constants.doubleDash + boundary + constants.doubleDash);
-    httpConfig.data = batchBody.join(constants.newline);
     return httpConfig;
   }
 
@@ -87,18 +55,20 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
    */
   function parseResponseFn(requests, rawResponse, config) {
     var batchResponses = [],
-      boundaryToken = findResponseBoundary(rawResponse.headers()['content-type']),
-      parts = rawResponse.data.split(constants.doubleDash + boundaryToken + constants.newline),
-      i,
-      part,
-      responseCount = 0;
+      i, request,
+      responseData = rawResponse.data,
+      dataPart;
 
-    for (i = 0; i < parts.length; i += 1) {
-      part = parts[i];
-      if (part !== constants.emptyString) {
-        batchResponses.push(processResponse(part, requests[responseCount], boundaryToken));
-        responseCount += 1;
-      }
+    for (i = 0; i < requests.length; i += 1) {
+      request = requests[i];
+      dataPart = responseData[i.toString()];
+
+      batchResponses.push(new window.ahb.HttpBatchResponseData(
+        request,
+        dataPart.statusCode,
+        '',
+        dataPart.body,
+        dataPart.headers));
     }
 
     return batchResponses;
@@ -111,132 +81,8 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
    * @returns {boolean} false to indicate the request type is not supported.
    */
   function canBatchRequestFn(request, config) {
-    return true;
-  }
-
-  /**
-   * mainly here to polyfill ie8 :-(
-   */
-  function trim(data) {
-    if (data.trim) {
-      data = data.trim();
-    } else {
-      data = data.replace(/^\s+|\s+$/g, '');
-    }
-
-    return data;
-  }
-
-  function getUrlInfo(url) {
-    var protocol,
-      host,
-      relativeUrl,
-      protocolEndIndex,
-      urlParts;
-
-    if (url.indexOf('./') > -1 || url.indexOf('../') > -1) {
-      // we have a complex relative url i.e. './api/products' or '../api/products
-      var parser = document.createElement('a');
-      parser.href = url;
-      url = parser.href;
-    }
-
-    if (url.indexOf('://') > -1) {
-      protocolEndIndex = url.indexOf('://') + 3;
-      urlParts = url.slice(protocolEndIndex).split(constants.forwardSlash);
-      // we have an absolute url
-      protocol = url.substring(0, protocolEndIndex);
-      // Get the host portion of the url from '://' to the next'/'
-      // [https://www.somedomain.com/]api/messages
-      host = urlParts[0];
-      relativeUrl = (function () {
-        delete urlParts[0];
-        return urlParts.join(constants.forwardSlash);
-      }());
-    } else {
-      //we have a relative url
-      relativeUrl = url;
-      protocol = $window.location.protocol;
-      host = $window.location.host;
-    }
-
-    return {
-      protocol: protocol,
-      host: host,
-      relativeUrl: relativeUrl
-    };
-  }
-
-  function findResponseBoundary(contentType) {
-    var boundaryText = 'boundary=',
-      startIndex = contentType.indexOf(boundaryText),
-      boundary = contentType.substring(startIndex + boundaryText.length);
-
-    // the boundary might be quoted so remove the quotes
-    boundary = boundary.replace(/"/g, constants.emptyString);
-    return boundary;
-  }
-
-  function convertDataToCorrectType(contentType, dataStr) {
-    var data = dataStr;
-    contentType = contentType.toLowerCase();
-
-    if (contentType.indexOf('json') > -1) {
-      data = angular.fromJson(dataStr);
-    }
-
-    return data;
-  }
-
-  function processResponse(part, request, boundaryToken) {
-    var responseParts = part.split(constants.newline),
-      result = {
-        headers: {}
-      },
-      responsePart,
-      i, j, regex, lineParts, headerParts, parsedSpaceBetweenHeadersAndMessage = false;
-
-    for (i = 0; i < responseParts.length; i += 1) {
-      responsePart = responseParts[i];
-      if (responsePart === constants.emptyString) {
-        parsedSpaceBetweenHeadersAndMessage = result.contentType !== undefined;
-        continue;
-      }
-
-      if (result.contentType === undefined && responsePart.indexOf('-Type') !== -1 && responsePart.indexOf('; msgtype=response') === -1) {
-        result.contentType = responsePart.split(constants.forwardSlash)[1];
-      } else if (result.contentType !== undefined && parsedSpaceBetweenHeadersAndMessage === false) {
-        headerParts = responsePart.split(constants.colon);
-        result.headers[headerParts[0]] = trim(headerParts[1]);
-      } else if (result.statusCode === undefined && responsePart.indexOf(constants.httpVersion) !== -1) {
-        lineParts = responsePart.split(constants.singleSpace);
-        result.statusCode = parseInt(lineParts[1], 10);
-        result.statusText = lineParts.slice(2).join(constants.singleSpace);
-      } else if (result.data === undefined && parsedSpaceBetweenHeadersAndMessage) {
-        // need to get all the lines left apart from the last multipart seperator.
-        result.data = '';
-        j = 1;
-        regex = new RegExp('--' + boundaryToken + '--', 'i');
-        while (regex.test(responsePart) === false && ((i + j) <= responseParts.length)) {
-          result.data += responsePart;
-          responsePart = responseParts[i + j];
-          j += 1;
-        }
-
-        result.data = convertDataToCorrectType(result.contentType, result.data);
-        break;
-      }
-    }
-
-    result.headers[constants.contentType] = result.contentType;
-    return new window.ahb.HttpBatchResponseData(request, result.statusCode, result.statusText, result.data, result.headers);
+    return request.method === 'GET';
   }
 }
 
-HttpBatchAdapter.$inject = [
-  '$document',
-  '$window',
-  'httpBatchConfig'
-];
-
-angular.module(window.ahb.name).service('httpBatchAdapter', HttpBatchAdapter);
+angular.module(window.ahb.name).service('nodeJsMultiFetchAdapter', NodeJsMultiFetchAdapter);

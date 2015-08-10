@@ -1,7 +1,9 @@
-15/07/2015 V1.11.0
-HUGE refactor of library geared towards supporting multiple different formats of batch request as response i.e.
+10/08/2015 V1.11.0
+HUGE refactor of the library geared towards supporting multiple different formats of batch request and response i.e.
 http 1.1 batch, NodeJS, Facebook etc.  The library now has the concept of batch adapters which are able to transform raw
 http requests and responses into the correct batch formats for a particular server.
+Added the default http 1.1 adapter which supports .net / java
+Added a node js multifetch <https://github.com/debitoor/multifetch> adapter which supports fetch a batch of GET requests.
 
 15/07/2015 V1.10.0
 Added support for complex relative urls i.e. './api/products' or '../api/products'

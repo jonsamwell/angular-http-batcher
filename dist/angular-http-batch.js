@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.11.0 - 2015-08-08
+ * angular-http-batcher - v1.11.0 - 2015-08-10
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2015 Jon Samwell
  */
@@ -145,6 +145,7 @@ function HttpBatchConfigFn() {
         canBatch = canBatchRequestFn(url, method);
       } else {
         canBatch = config.batchEndpointUrl !== url &&
+          url.indexOf(config.batchEndpointUrl) === -1 &&
           config.ignoredVerbs.indexOf(method.toLowerCase()) === -1;
       }
     }
@@ -267,11 +268,12 @@ BatchRequestManager.prototype.send = sendFn;
 BatchRequestManager.prototype.addRequest = addRequestFn;
 BatchRequestManager.prototype.flush = flushFn;
 
-function HttpBatcherFn($injector, $timeout, httpBatchConfig, httpBatchAdapter) {
+function HttpBatcherFn($injector, $timeout, httpBatchConfig, httpBatchAdapter, nodeJsMultiFetchAdapter) {
   var self = this,
     currentBatchedRequests = {},
     adapters = {
-      httpBatchAdapter: httpBatchAdapter
+      httpBatchAdapter: httpBatchAdapter,
+      nodeJsMultiFetchAdapter: nodeJsMultiFetchAdapter
     };
 
   self.canBatchRequest = canBatchRequestFn;
@@ -312,7 +314,8 @@ HttpBatcherFn.$inject = [
   '$injector',
   '$timeout',
   'httpBatchConfig',
-  'httpBatchAdapter'
+  'httpBatchAdapter',
+  'nodeJsMultiFetchAdapter'
 ];
 
 angular.module(window.ahb.name).service('httpBatcher', HttpBatcherFn);
