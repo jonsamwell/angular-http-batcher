@@ -2,10 +2,11 @@ Angular Http Batcher - enabling transparent HTTP batch request with AngularJS
 ====================
 
 The biggest performance boost you will get with modern single page style apps is to reduce the number of HTTP request you 
-send.  This module has been designed to batch http requests to the same endpoint following the http 1.1 batch spec.  All
-you need to do is configure the batch endpoint with the library and the rest is taken care of.
+send.  This module has been designed to batch http requests to the same endpoint following the http 1.1 batch spec and after the
+1.11.0 update it can now support multiple any number of batch formats and I'm planning to implement that Facebook batch protocol
+very soon.  All you need to do is configure the batch endpoint with the library and the rest is taken care of!
 
-See my original blog blog for a detailed overview - http://jonsamwell.com/batching-http-requests-in-angular/
+See my original blog post for a detailed overview - http://jonsamwell.com/batching-http-requests-in-angular/
 
 <h3 id="angular-http-batcher-getting-started">Getting Started</h3>
 
@@ -51,7 +52,7 @@ angular.module('myApp', ['jcs.angular-http-batch']);
 
 The root endpoint url is simply the base address of your api and the endpoint batch address is the url of the method that can accept the batch request (usually just /batch or /$batch).  You are able to pass some optional configuration paramaters to this call in the third argument (see below)
 
-The setAllowedBatchEndpoint has some options that can be passed in as a third paramter to the call which are explained below.
+The setAllowedBatchEndpoint has some options that can be passed in as a third parameter to the call which are explained below.
 
 ```language-javascript
 {
@@ -60,8 +61,65 @@ The setAllowedBatchEndpoint has some options that can be passed in as a third pa
 	batchRequestCollectionDelay: 100,
 	ignoredVerbs: ['head'],
     sendCookies: false,
-    enabled: true
+    enabled: true,
+    adapter: 'httpBatchAdapter' //defaults to this value we currently also support a node js multifetch format as well
 }
+```
+
+####adapter
+The key for the adapter to use.  Defaults to the HTTP 1.1 adapter 'httpBatchAdapter'.
+Current adapters are:
+    'httpBatchAdapter' - supports the HTTP 1.1 spec and used by .Net (WebAPI) and JAVA servers.
+    'nodeJsMultiFetchAdapter' - supports batching GET requests to a node server that uses the multifetch library.
+Coming soon:
+    'facebookAdapter' - will support the facebook batching protocol.
+
+Please request adapters that are not present.
+
+Adapters convert http requests into a single batch request and parse the batch response.  They consist of two methods defined below.
+
+This adapter parameter can also be an object with the two below functions if you need to be more specific about the way
+requests and responses are handled.
+
+```javascript
+   /**
+    * Builds the single batch request from the given batch of pending requests.
+    * Returns a standard angular httpConfig object that will be use to invoke the $http service.
+    * See:
+    * https://developers.google.com/storage/docs/json_api/v1/how-tos/batch
+    * http://blogs.msdn.com/b/webdev/archive/2013/11/01/introducing-batch-support-in-web-api-and-web-api-odata.aspx
+    *
+    * @param requests - the collection of pending http request to build into a single http batch request.
+    * @param config - the http batch config.
+    * @returns {object} - a http config object.
+    */
+   function buildRequestFn(requests, config) {
+     var httpConfig = {
+         method: 'POST',
+         url: config.batchEndpointUrl,
+         cache: false,
+         headers: config.batchRequestHeaders || {}
+       };
+
+     // do processing...
+
+     return httpConfig;
+   }
+
+   /**
+    * Parses the raw response into an array of HttpBatchResponseData objects.  If is this methods job
+    * to parse the response and match it up with the orginal request object.
+    * @param rawResponse
+    * @param config
+    * @returns {Array.HttpBatchResponseData[]}
+    */
+   function parseResponseFn(requests, rawResponse, config) {
+     var batchResponses = []; // array of HttpBatchResponseData
+
+     //do processing..
+
+     return batchResponses;
+   }
 ```
 
 ####maxBatchedRequestPerCall

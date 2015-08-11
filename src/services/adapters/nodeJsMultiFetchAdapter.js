@@ -50,10 +50,9 @@ function NodeJsMultiFetchAdapter() {
    * Parses the raw response into an array of HttpBatchResponseData objects.  If is this methods job
    * to parse the response and match it up with the orginal request object.
    * @param rawResponse
-   * @param config
    * @returns {Array.HttpBatchResponseData[]}
    */
-  function parseResponseFn(requests, rawResponse, config) {
+  function parseResponseFn(requests, rawResponse) {
     var batchResponses = [],
       i, request,
       responseData = rawResponse.data,
@@ -77,10 +76,9 @@ function NodeJsMultiFetchAdapter() {
   /**
    * Gaurd method to ensure the adapter supports this given request.
    * @param request
-   * @param config
    * @returns {boolean} false to indicate the request type is not supported.
    */
-  function canBatchRequestFn(request, config) {
+  function canBatchRequestFn(request) {
     return request.method === 'GET';
   }
 }

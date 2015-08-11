@@ -684,6 +684,45 @@
           $httpBackend.flush();
         });
 
+        it('should parse the response of a single batch request which contains the Angular "JSON Vulnerability Protection" prefix', function (done) {
+          var batchConfig = {
+              batchEndpointUrl: 'http://www.someservice.com/batch',
+              batchRequestCollectionDelay: 200,
+              minimumBatchSize: 1,
+              adapter: defaultBatchAdapter
+            },
+            postData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--',
+            responseData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+            'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8;\r\n\r\n' +
+            ')]}\',\n' + // JSON Vulnerability Protection prefix (see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection )
+            '{"results":[{"BusinessDescription":"Some text here"}],"inlineCount":35}' +
+            '\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--\r\n';
+
+          $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+            'content-type': 'multipart/mixed; boundary="31fcc127-a593-4e1d-86f3-57e45375848f"'
+          }, 'OK');
+
+          sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('31fcc127-a593-4e1d-86f3-57e45375848f');
+          sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+          httpBatcher.batchRequest({
+            url: 'http://www.gogle.com/resource',
+            method: 'GET',
+            callback: function (statusCode, data) {
+              expect(data).to.deep.equal({
+                results: [{
+                  BusinessDescription: 'Some text here'
+                }],
+                inlineCount: 35
+              });
+              done();
+            }
+          });
+
+          $timeout.flush();
+          $httpBackend.flush();
+        });
+
         describe('error handling', function () {
           it('should handle a 500 response', function (done) {
             var batchConfig = {
