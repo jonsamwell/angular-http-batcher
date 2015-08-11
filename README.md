@@ -69,11 +69,13 @@ The setAllowedBatchEndpoint has some options that can be passed in as a third pa
 The key of the adapter to use to serialise/deserialise batch requests.  Defaults to the HTTP 1.1 adapter 'httpBatchAdapter'.
 
 Current adapters are:
-    1. 'httpBatchAdapter' - supports the HTTP 1.1 spec and used by .Net (WebAPI) and JAVA servers.
-    2. 'nodeJsMultiFetchAdapter' - supports batching GET requests to a node server that uses the multifetch library.
+
+    1. 'httpBatchAdapter': supports the HTTP 1.1 spec and used by .Net (WebAPI) and JAVA servers.
+    2. 'nodeJsMultiFetchAdapter': supports batching GET requests to a node server that uses the multifetch library.
     
 Coming soon:
-    1. 'facebookAdapter' - will support the facebook batching protocol.
+
+    1. 'facebookAdapter': will support the facebook batching protocol.
 
 **Please request adapters that are not present.**
 
