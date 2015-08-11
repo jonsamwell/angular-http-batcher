@@ -3,8 +3,7 @@ Angular Http Batcher - enabling transparent HTTP batch request with AngularJS
 
 The biggest performance boost you will get with modern single page style apps is to reduce the number of HTTP request you 
 send.  This module has been designed to batch http requests to the same endpoint following the http 1.1 batch spec and after the
-1.11.0 update it can now support multiple any number of batch formats and I'm planning to implement that Facebook batch protocol
-very soon.  All you need to do is configure the batch endpoint with the library and the rest is taken care of!
+1.11.0 update it can now support serialising to any number of batch formats and I'm planning to implement that Facebook batch protocol very soon.  All you need to do is configure the batch endpoint with the library and the rest is taken care of!
 
 See my original blog post for a detailed overview - http://jonsamwell.com/batching-http-requests-in-angular/
 
@@ -67,14 +66,16 @@ The setAllowedBatchEndpoint has some options that can be passed in as a third pa
 ```
 
 ####adapter
-The key for the adapter to use.  Defaults to the HTTP 1.1 adapter 'httpBatchAdapter'.
-Current adapters are:
-    'httpBatchAdapter' - supports the HTTP 1.1 spec and used by .Net (WebAPI) and JAVA servers.
-    'nodeJsMultiFetchAdapter' - supports batching GET requests to a node server that uses the multifetch library.
-Coming soon:
-    'facebookAdapter' - will support the facebook batching protocol.
+The key of the adapter to use to serialise/deserialise batch requests.  Defaults to the HTTP 1.1 adapter 'httpBatchAdapter'.
 
-Please request adapters that are not present.
+Current adapters are:
+    1. 'httpBatchAdapter' - supports the HTTP 1.1 spec and used by .Net (WebAPI) and JAVA servers.
+    2. 'nodeJsMultiFetchAdapter' - supports batching GET requests to a node server that uses the multifetch library.
+    
+Coming soon:
+    1. 'facebookAdapter' - will support the facebook batching protocol.
+
+**Please request adapters that are not present.**
 
 Adapters convert http requests into a single batch request and parse the batch response.  They consist of two methods defined below.
 
