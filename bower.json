@@ -1,6 +1,6 @@
 {
   "name": "angular-http-batcher",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "Enables transparent HTTP batch requests with Angular",
   "main": "dist/angular-http-batch.js",
   "keywords": [
@@ -34,7 +34,8 @@
   ],
   "devDependencies": {
     "sinon": "~1.10.3",
-    "angular-mocks": ">=1.2.23"
+    "angular-mocks": ">=1.2.23",
+    "angular-resource": ">=1.2.23"
   },
   "dependencies": {
     "angular": ">= 1.2.23"

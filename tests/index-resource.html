@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html ng-app="httpBatchExample">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<div ng-controller="mainCtrl">
+    <button type="button" ng-click="callResourceAndHttp();">Call Resource & Http</button>
+</div>
+
+<script src="../bower_components/angular/angular.js"></script>
+<script src="../bower_components/angular-resource/angular-resource.js"></script>
+
+<!--<script src="../dist/angular-http-batch.js"></script>-->
+
+<script src="../src/angular-http-batch.js"></script>
+<script src="../src/providers/httpBatchConfig.js"></script>
+<script src="../src/services/httpBatcher.js"></script>
+<script src="../src/services/httpBatcher.js"></script>
+<script src="../src/services/adapters/httpBatchResponseData.js"></script>
+<script src="../src/services/adapters/httpAdapter.js"></script>
+<script src="../src/services/adapters/nodeJsMultiFetchAdapter.js"></script>
+<script src="../src/config/httpBackendDecorator.js"></script>
+
+<script type="text/javascript">
+    var app = angular.module('httpBatchExample', ['ngResource', window.ahb.name]);
+
+    app.config(['$httpProvider', function($httpProvider) {
+        $httpProvider.defaults.withCredentials = true;
+    }]);
+
+    app.config([
+            'httpBatchConfigProvider',
+            function (httpBatchConfigProvider) {
+                httpBatchConfigProvider.setAllowedBatchEndpoint(
+                '/',
+                'http://localhost:8080/api/batch', {
+                    batchRequestCollectionDelay: 500,
+                    minimumBatchSize: 1
+                });
+            }
+    ]);
+
+    app.controller('mainCtrl', [
+        '$scope',
+        '$http',
+        '$resource',
+    function ($scope, $http, $resource) {
+        $scope.callResourceAndHttp = function () {
+            var resourcedArtifact = $resource("/api/products/:id", { id: '@id' }, { update: { method: 'PUT' } });
+
+            resourcedArtifact.get({id: 1}).$promise.then(function (data) {
+                // just data as it is passing the object rather than the response
+                console.log('success 0 - ' + angular.toJson(data));
+            }, function (err) {
+                console.log('error 0 - ' + angular.toJson(err));
+            });
+
+            $http.get('/api/products/1', { cache: true }).then(function (data) {
+                console.log('success 1 - ' + angular.toJson(data.data));
+            }, function (err) {
+                console.log('error 1 - ' + angular.toJson(err));
+            });
+        };
+    }]);
+</script>
+
+</body>
+</html>

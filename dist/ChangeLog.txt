@@ -1,3 +1,6 @@
+21/08/2015 V1.11.2
+Fixed dist file build error.
+
 11/08/2015 V1.11.1
 Added support for the Angular Json protection vulnerability when parsing json (see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection)
 thanks to @riann (https://github.com/riaann) for this!!
