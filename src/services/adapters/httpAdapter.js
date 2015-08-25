@@ -216,7 +216,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
         // need to get all the lines left apart from the last multipart seperator.
         result.data = '';
         j = 1;
-        regex = new RegExp('--' + boundaryToken + '--', 'i');
+        regex = new RegExp('^--' + boundaryToken + '--', 'i');
         while (regex.test(responsePart) === false && ((i + j) <= responseParts.length)) {
           result.data += responsePart;
           responsePart = responseParts[i + j];
