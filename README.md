@@ -144,7 +144,7 @@ For example:
 
 ```language-javascript
     function(url, method) {
-      return url.indexOf('user') && method.toLowerCase() === 'get';
+      return url.indexOf('api') > -1 && method.toLowerCase() === 'get';
     }
 ```
 
