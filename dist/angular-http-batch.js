@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.11.2 - 2015-08-25
+ * angular-http-batcher - v1.11.3 - 2015-08-25
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2015 Jon Samwell
  */
