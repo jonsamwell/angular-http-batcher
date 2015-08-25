@@ -40,7 +40,7 @@ function addRequestFn(request) {
  * @returns {*|void|string}
  */
 function trimJsonProtectionVulnerability(data) {
-  return data !== undefined ? data.replace(')]}\',\n', '') : data;
+  return typeof (data) === 'string' ? data.replace(')]}\',\n', '') : data;
 }
 
 function sendFn() {

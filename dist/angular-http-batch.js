@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.11.2 - 2015-08-21
+ * angular-http-batcher - v1.11.2 - 2015-08-25
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2015 Jon Samwell
  */
@@ -565,7 +565,7 @@ function addRequestFn(request) {
  * @returns {*|void|string}
  */
 function trimJsonProtectionVulnerability(data) {
-  return data !== undefined ? data.replace(')]}\',\n', '') : data;
+  return typeof (data) === 'string' ? data.replace(')]}\',\n', '') : data;
 }
 
 function sendFn() {
