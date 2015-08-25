@@ -53,7 +53,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
 
       batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
 
-      batchBody.push(request.method + ' ' + urlInfo.relativeUrl + ' ' + constants.httpVersion);
+      batchBody.push(request.method + ' ' + encodeURI(urlInfo.relativeUrl) + ' ' + constants.httpVersion);
       batchBody.push('Host: ' + urlInfo.host);
 
       for (header in request.headers) {
