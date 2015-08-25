@@ -16,7 +16,7 @@
     "http",
     "http batch"
   ],
-  "author": "Jon Samwell <jonsamwell@gmail.com>",
+  "author": "Jon Samwell <jonsamwell@gmail.com> (http://jonsamwell.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jonsamwell/angular-http-batcher/issues"
