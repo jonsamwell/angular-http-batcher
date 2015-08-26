@@ -723,6 +723,31 @@
           $httpBackend.flush();
         });
 
+        it('should return original data for non strings when trim Angular "JSON Vulnerability Protection" prefix', function (done) {
+           var data = [
+            {
+              "headers": {
+                "Content-Type": "text/html; charset=utf-8"
+              },
+              "status_code": 200,
+              "body": "Success!",
+              "reason_phrase": "OK"
+            },
+            {
+              "headers": {
+                "Content-Type": "text/html; charset=utf-8"
+              },
+              "status_code": 201,
+              "body": "{\"text\": \"some text\"}",
+              "reason_phrase": "CREATED"
+            }
+          ];
+          var returned = trimJsonProtectionVulnerability(data);
+          expect(returned).to.equal(data);
+          done();
+        });
+
+
         describe('error handling', function () {
           it('should handle a 500 response', function (done) {
             var batchConfig = {
