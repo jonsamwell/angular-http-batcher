@@ -1,3 +1,7 @@
+27/08/2015 V1.11.3
+Fixed error when trimming response to protect against JSON vulnerability error (pr  by @magarcia https://github.com/magarcia)
+Use encodeURI to process query strings with spaces and other such characters. (pr by https://github.com/tiwariarvin)
+
 21/08/2015 V1.11.2
 Fixed dist file build error.
 
