@@ -719,34 +719,64 @@
             }
           });
 
+
           $timeout.flush();
           $httpBackend.flush();
         });
 
         it('should return original data for non strings when trim Angular "JSON Vulnerability Protection" prefix', function (done) {
-           var data = [
-            {
+          var responseData = [{
               "headers": {
                 "Content-Type": "text/html; charset=utf-8"
               },
               "status_code": 200,
               "body": "Success!",
               "reason_phrase": "OK"
-            },
-            {
+            }, {
               "headers": {
                 "Content-Type": "text/html; charset=utf-8"
               },
               "status_code": 201,
               "body": "{\"text\": \"some text\"}",
               "reason_phrase": "CREATED"
-            }
-          ];
-          var returned = trimJsonProtectionVulnerability(data);
-          expect(returned).to.equal(data);
-          done();
-        });
+            }],
+            batchEndpointUrl = 'http://www.someservice.com/batch',
+            batchConfig = {
+              batchEndpointUrl: batchEndpointUrl,
+              batchRequestCollectionDelay: 200,
+              minimumBatchSize: 1,
+              adapter: {
+                buildRequest: function () {
+                  return {
+                    method: 'POST',
+                    url: batchEndpointUrl,
+                    cache: false,
+                    headers: {},
+                    data: ''
+                  };
+                },
+                parseResponse: function (requests, rawResponse) {
+                  expect(rawResponse.data).to.deep.equal(responseData);
+                  done();
+                  return [];
+                }
+              }
+            };
 
+          $httpBackend.expectPOST(batchConfig.batchEndpointUrl).respond(200, responseData, {}, 'OK');
+
+          sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('31fcc127-a593-4e1d-86f3-57e45375848f');
+          sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+          httpBatcher.batchRequest({
+            url: 'http://www.gogle.com/resource',
+            method: 'GET',
+            callback: angular.noop
+          });
+
+          $timeout.flush();
+          $httpBackend.flush();
+        });
 
         describe('error handling', function () {
           it('should handle a 500 response', function (done) {
