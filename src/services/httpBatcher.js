@@ -34,15 +34,6 @@ function addRequestFn(request) {
   return true;
 }
 
-/**
- * see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection
- * @param data
- * @returns {*|void|string}
- */
-function trimJsonProtectionVulnerability(data) {
-  return typeof (data) === 'string' ? data.replace(')]}\',\n', '') : data;
-}
-
 function sendFn() {
   var self = this,
     adapter = self.getAdapter(),
@@ -50,11 +41,7 @@ function sendFn() {
 
   self.sendCallback();
   self.$injector.get('$http')(httpBatchConfig).then(function (response) {
-    var batchResponses;
-
-    response.data = trimJsonProtectionVulnerability(response.data);
-
-    batchResponses = adapter.parseResponse(self.requests, response, self.config);
+    var batchResponses = adapter.parseResponse(self.requests, response, self.config);
 
     angular.forEach(batchResponses, function (batchResponse) {
       batchResponse.request.callback(
