@@ -120,6 +120,60 @@
             'GET api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
         });
 
+        it('should build the correct request that includes custom headers and a unique request name', function () {
+          var rawRequest = {
+              url: 'api/some-method?params=123',
+              method: 'GET'
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl',
+              batchRequestHeaders: {
+                'Content-disposition': 'form-data'
+              },
+              batchPartRequestHeaders: {
+                'Content-disposition': 'form-data'
+              },
+              uniqueRequestName: "veryUniqueRequestName"
+            };
+
+          var result = httpAdapter.buildRequest([rawRequest], config);
+
+          expect(result.method).to.equal('POST');
+          expect(result.url).to.equal(config.batchEndpointUrl);
+          expect(result.cache).to.equal(false);
+          expect(result.headers['Content-Type']).to.equal('multipart/mixed; boundary=boundary123');
+          expect(result.headers['Content-disposition']).to.equal('form-data');
+          expect(result.data).to.equal('--boundary123\r\nContent-disposition: form-data; name=veryUniqueRequestName0\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'GET api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
+        });
+
+        it('should ignore unique request name if content disposition is not sent', function () {
+          var rawRequest = {
+              url: 'api/some-method?params=123',
+              method: 'GET'
+            },
+            config = {
+              batchEndpointUrl: 'batchEndpointUrl',
+              batchRequestHeaders: {
+                'Custom-Header': 'sweet'
+              },
+              batchPartRequestHeaders: {
+                'Custom-Header': 'sweet'
+              },
+              uniqueRequestName: "veryUniqueRequestName"
+            };
+
+          var result = httpAdapter.buildRequest([rawRequest], config);
+
+          expect(result.method).to.equal('POST');
+          expect(result.url).to.equal(config.batchEndpointUrl);
+          expect(result.cache).to.equal(false);
+          expect(result.headers['Content-Type']).to.equal('multipart/mixed; boundary=boundary123');
+          expect(result.headers['Custom-Header']).to.equal('sweet');
+          expect(result.data).to.equal('--boundary123\r\nCustom-Header: sweet\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
+            'GET api/some-method?params=123 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
+        });
+
         it('should build the correct request that includes uri ecoding the urls', function () {
           var rawRequest = {
               url: 'api/some method?params=123',

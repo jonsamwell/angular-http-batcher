@@ -52,7 +52,8 @@
             batchEndpointUrl: batchEndpointUrl,
             enabled: true,
             sendCookies: false,
-            adapter: 'httpBatchAdapter'
+            adapter: 'httpBatchAdapter',
+            uniqueRequestName: null
           });
         });
 
@@ -71,7 +72,8 @@
             batchEndpointUrl: batchEndpointUrl,
             enabled: true,
             sendCookies: false,
-            adapter: 'httpBatchAdapter'
+            adapter: 'httpBatchAdapter',
+            uniqueRequestName: null
           });
         });
 
