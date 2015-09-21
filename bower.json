@@ -1,6 +1,6 @@
 {
-  "name": "angular-http-batcher-servlet-edition",
-  "version": "1.7.1",
+  "name": "angular-http-batcher",
+  "version": "1.11.3",
   "description": "Enables transparent HTTP batch requests with Angular",
   "main": "dist/angular-http-batch.js",
   "keywords": [
@@ -9,20 +9,21 @@
     "http",
     "http batch"
   ],
-  "authors": [
-    "Jon Samwell <jonsamwell@gmail.com> (https://github.com/jonsamwell)",
-    "Jason Buchanan <jsnbuchanan@gmail.com> (https://github.com/jsnbuchanan)"
-  ],
+  "author": {
+    "name": "Jon Samwell",
+    "email": "jonsamwell@gmail.com",
+    "url": "https://github.com/jonsamwell"
+  },
   "licenses": [
     {
       "type": "MIT",
       "url": "http://www.opensource.org/licenses/MIT"
     }
   ],
-  "homepage": "https://github.com/jsnbuchanan/angular-http-batcher-servlet-edition",
+  "homepage": "https://github.com/jonsamwell/angular-http-batcher",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jsnbuchanan/angular-http-batcher-servlet-edition"
+    "url": "git://github.com/jonsamwell/angular-http-batcher"
   },
   "ignore": [
     "**/.*",
@@ -33,7 +34,8 @@
   ],
   "devDependencies": {
     "sinon": "~1.10.3",
-    "angular-mocks": ">=1.2.23"
+    "angular-mocks": ">=1.2.23",
+    "angular-resource": ">=1.2.23"
   },
   "dependencies": {
     "angular": ">= 1.2.23"

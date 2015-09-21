@@ -13,12 +13,13 @@ namespace WebApiHttpBatchServer
     {
         public static void Register(HttpConfiguration config)
         {
-            //config.EnableCors();
+            config.EnableCors();
             // Web API routes
             config.EnableSystemDiagnosticsTracing().IsVerbose = true;
             config.MapHttpAttributeRoutes();
 
             var defaultPolicyProvider = new EnableCorsAttribute("*", "*", "*");
+            defaultPolicyProvider.SupportsCredentials = true; //important if you are sending cookies
             AttributeBasedPolicyProviderFactory policyProviderFactory = new AttributeBasedPolicyProviderFactory();
             policyProviderFactory.DefaultPolicyProvider = defaultPolicyProvider;
             config.SetCorsPolicyProviderFactory(policyProviderFactory);
@@ -28,7 +29,7 @@ namespace WebApiHttpBatchServer
                 routeTemplate: "api/batch",
                 defaults: null,
                 constraints: null,
-                handler: new CorsMessageHandler(config) { InnerHandler = new DefaultHttpBatchHandler(GlobalConfiguration.DefaultServer) });
+                handler: new DefaultHttpBatchHandler(GlobalConfiguration.DefaultServer));
             
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",

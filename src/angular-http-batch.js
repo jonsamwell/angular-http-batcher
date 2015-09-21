@@ -1,5 +1,5 @@
 window.ahb = {
-    name: 'jcs.angular-http-batch'
+  name: 'jcs.angular-http-batch'
 };
 
 /**

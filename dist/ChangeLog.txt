@@ -1,5 +1,36 @@
-23/05/2015 V1.7.1
-Adding support for java servlet spec <= 3.1 and Spring MVC, to deal with the way multipart requests are parsed in Java.
+27/08/2015 V1.11.3
+Fixed error when trimming response to protect against JSON vulnerability error (pr  by @magarcia https://github.com/magarcia)
+Use encodeURI to process query strings with spaces and other such characters in default http adapter. (pr by https://github.com/tiwariarvin)
+
+21/08/2015 V1.11.2
+Fixed dist file build error.
+
+11/08/2015 V1.11.1
+Added support for the Angular Json protection vulnerability when parsing json (see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection)
+thanks to @riann (https://github.com/riaann) for this!!
+Added documentation for the new 'adapter' config property and tests around the node js multifetch adapter.
+
+10/08/2015 V1.11.0
+HUGE refactor of the library geared towards supporting multiple different formats of batch request and response i.e.
+http 1.1 batch, NodeJS, Facebook etc.  The library now has the concept of batch adapters which are able to transform raw
+http requests and responses into the correct batch formats for a particular server.
+Added the default http 1.1 adapter which supports .net / java
+Added a node js multifetch <https://github.com/debitoor/multifetch> adapter which supports fetch a batch of GET requests.
+
+15/07/2015 V1.10.0
+Added support for complex relative urls i.e. './api/products' or '../api/products'
+
+15/07/2015 V1.9.0
+A function can now be added to the config object to override the default mechanism used to determine if a call should be batched.
+Add a canBatchRequest function to the config object which takes in a url and http method type and return true if the call can be batched.
+Add the ability to specify additional header to be added to the batch request and each individual batch request part.  This is to improve
+compatibly with java servlet <=3.1 where it needs a content disposition header to parse the request.
+
+29/05/2015 V1.8.0
+Fixed - Number of items in a request is one larger than maxBatchedRequestPerCall
+Added the ability to send non-HTTPOnly cookies in each request segment in a batch request via the sendCookies flag on the
+config object.
+The batcher can now be disabled by setting the enabled config flag to false
 
 16/03/2015 V1.7.0
 Fixed issue with parsing the response string into a json object with having more than two dashes '--' in the returned data.
