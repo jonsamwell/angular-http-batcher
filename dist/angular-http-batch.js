@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.11.5 - 2015-09-22
+ * angular-http-batcher - v1.11.3 - 2015-08-27
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2015 Jon Samwell
  */
@@ -29,8 +29,7 @@ function HttpBatchConfigFn() {
       ignoredVerbs: ['head'],
       sendCookies: false,
       enabled: true,
-      adapter: defaultBatchAdapter,
-      uniqueRequestName: null
+      adapter: defaultBatchAdapter
     };
 
   /**
@@ -204,9 +203,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       singleSpace: ' ',
       forwardSlash: '/',
       doubleDash: '--',
-      colon: ':',
-      semiColon: ';',
-      requestName: 'name='
+      colon: ':'
     };
 
   self.key = 'httpBatchAdapter';
@@ -245,13 +242,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       batchBody.push(constants.doubleDash + boundary);
       if (config.batchPartRequestHeaders) {
         for (header in config.batchPartRequestHeaders) {
-          if (config.batchPartRequestHeaders.hasOwnProperty(header)) {
-            var currHeader = header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header];
-            if (header.toLowerCase() === "content-disposition" && config.uniqueRequestName !== null && config.uniqueRequestName !== undefined) {
-              currHeader += constants.semiColon + constants.singleSpace + constants.requestName + config.uniqueRequestName + i;
-            }
-            batchBody.push(currHeader);
-          }
+          batchBody.push(header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header]);
         }
       }
 
@@ -374,8 +365,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
   function findResponseBoundary(contentType) {
     var boundaryText = 'boundary=',
       startIndex = contentType.indexOf(boundaryText),
-      endIndex = contentType.indexOf(';', startIndex),
-      boundary = contentType.substring(startIndex + boundaryText.length, endIndex > 0 ? endIndex : contentType.length);
+      boundary = contentType.substring(startIndex + boundaryText.length);
 
     // the boundary might be quoted so remove the quotes
     boundary = boundary.replace(/"/g, constants.emptyString);
