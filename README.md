@@ -170,6 +170,28 @@ For instance java servlet <= 3.1 parses multipart requests looking for the Conte
 
 See notes on running this with java servlet <= 3.1
 
+####uniqueRequestName
+
+An optional parameter to set a unique parameter name on the Content-Disposition header.
+This requires the use of `batchPartRequestHeaders` sending in a Content-Disposition header.  Sample configuration:
+
+```language-javascript
+  {
+    ...
+    batchPartRequestHeaders: {'Content-Disposition': 'form-data' },
+    uniqueRequestName: "batchRequest"
+    ...
+  }
+```
+
+Some backend servers may require that each part be named in this manner.
+If the configuration above is used, then each part will have a header like this:
+```Content-Disposition: form-data; name=batchRequest0```
+
+If a Content-Disposition header is not added in the `batchPartRequestHeaders` then this parameter
+is silently ignored.
+
+
 ####sendCookies
 False by default to reduce request size.  If this is set to true cookies available on the document.cookie property will be set
 in each segment of a batch request.  Note that only non HTTPOnly cookies will be sent as HTTPOnly cookies cannot be access by JavaScript

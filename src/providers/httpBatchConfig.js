@@ -8,7 +8,8 @@ function HttpBatchConfigFn() {
       ignoredVerbs: ['head'],
       sendCookies: false,
       enabled: true,
-      adapter: defaultBatchAdapter
+      adapter: defaultBatchAdapter,
+      uniqueRequestName: null
     };
 
   /**

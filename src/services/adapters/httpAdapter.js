@@ -8,7 +8,9 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       singleSpace: ' ',
       forwardSlash: '/',
       doubleDash: '--',
-      colon: ':'
+      colon: ':',
+      semiColon: ';',
+      requestName: 'name='
     };
 
   self.key = 'httpBatchAdapter';
@@ -47,7 +49,13 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       batchBody.push(constants.doubleDash + boundary);
       if (config.batchPartRequestHeaders) {
         for (header in config.batchPartRequestHeaders) {
-          batchBody.push(header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header]);
+          if (config.batchPartRequestHeaders.hasOwnProperty(header)) {
+            var currHeader = header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header];
+            if (header.toLowerCase() === "content-disposition" && config.uniqueRequestName !== null && config.uniqueRequestName !== undefined) {
+              currHeader += constants.semiColon + constants.singleSpace + constants.requestName + config.uniqueRequestName + i;
+            }
+            batchBody.push(currHeader);
+          }
         }
       }
 
@@ -170,7 +178,8 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
   function findResponseBoundary(contentType) {
     var boundaryText = 'boundary=',
       startIndex = contentType.indexOf(boundaryText),
-      boundary = contentType.substring(startIndex + boundaryText.length);
+      endIndex = contentType.indexOf(';', startIndex),
+      boundary = contentType.substring(startIndex + boundaryText.length, endIndex > 0 ? endIndex : contentType.length);
 
     // the boundary might be quoted so remove the quotes
     boundary = boundary.replace(/"/g, constants.emptyString);
