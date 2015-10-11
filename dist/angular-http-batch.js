@@ -1,5 +1,5 @@
 /*
- * angular-http-batcher - v1.11.3 - 2015-08-27
+ * angular-http-batcher - v1.12.0 - 2015-10-12
  * https://github.com/jonsamwell/angular-http-batcher
  * Copyright (c) 2015 Jon Samwell
  */
@@ -29,7 +29,8 @@ function HttpBatchConfigFn() {
       ignoredVerbs: ['head'],
       sendCookies: false,
       enabled: true,
-      adapter: defaultBatchAdapter
+      adapter: defaultBatchAdapter,
+      uniqueRequestName: null
     };
 
   /**
@@ -203,7 +204,9 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       singleSpace: ' ',
       forwardSlash: '/',
       doubleDash: '--',
-      colon: ':'
+      colon: ':',
+      semiColon: ';',
+      requestName: 'name='
     };
 
   self.key = 'httpBatchAdapter';
@@ -231,7 +234,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
         headers: config.batchRequestHeaders || {}
       },
       batchBody = [],
-      urlInfo, i, request, header;
+      urlInfo, i, request, header, relativeUrlParts, encodedRelativeUrl;
 
     httpConfig.headers[constants.contentType] = 'multipart/mixed; boundary=' + boundary;
 
@@ -242,13 +245,24 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       batchBody.push(constants.doubleDash + boundary);
       if (config.batchPartRequestHeaders) {
         for (header in config.batchPartRequestHeaders) {
-          batchBody.push(header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header]);
+          if (config.batchPartRequestHeaders.hasOwnProperty(header)) {
+            var currHeader = header + constants.colon + constants.singleSpace + config.batchPartRequestHeaders[header];
+            if (header.toLowerCase() === "content-disposition" && config.uniqueRequestName !== null && config.uniqueRequestName !== undefined) {
+              currHeader += constants.semiColon + constants.singleSpace + constants.requestName + config.uniqueRequestName + i;
+            }
+            batchBody.push(currHeader);
+          }
         }
       }
 
       batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
 
-      batchBody.push(request.method + ' ' + encodeURI(urlInfo.relativeUrl) + ' ' + constants.httpVersion);
+      // angular would have already encoded the parameters *if* the dev passed them in via the params parameter to $http
+      // so we only need to url encode the url not the query string part
+      relativeUrlParts = urlInfo.relativeUrl.split('?');
+      encodedRelativeUrl = encodeURI(relativeUrlParts[0]) + (relativeUrlParts.length > 1 ? '?' + relativeUrlParts[1] : '');
+
+      batchBody.push(request.method + ' ' + encodedRelativeUrl + ' ' + constants.httpVersion);
       batchBody.push('Host: ' + urlInfo.host);
 
       for (header in request.headers) {
@@ -365,11 +379,21 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
   function findResponseBoundary(contentType) {
     var boundaryText = 'boundary=',
       startIndex = contentType.indexOf(boundaryText),
-      boundary = contentType.substring(startIndex + boundaryText.length);
+      endIndex = contentType.indexOf(';', startIndex),
+      boundary = contentType.substring(startIndex + boundaryText.length, endIndex > 0 ? endIndex : contentType.length);
 
     // the boundary might be quoted so remove the quotes
     boundary = boundary.replace(/"/g, constants.emptyString);
     return boundary;
+  }
+
+  /**
+   * see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection
+   * @param data
+   * @returns {*|void|string}
+   */
+  function trimJsonProtectionVulnerability(data) {
+    return typeof (data) === 'string' ? data.replace(')]}\',\n', '') : data;
   }
 
   function convertDataToCorrectType(contentType, dataStr) {
@@ -377,6 +401,8 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
     contentType = contentType.toLowerCase();
 
     if (contentType.indexOf('json') > -1) {
+      // only remove json vulnerability prefix if we're parsing json
+      dataStr = trimJsonProtectionVulnerability(dataStr);
       data = angular.fromJson(dataStr);
     }
 
@@ -559,15 +585,6 @@ function addRequestFn(request) {
   return true;
 }
 
-/**
- * see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection
- * @param data
- * @returns {*|void|string}
- */
-function trimJsonProtectionVulnerability(data) {
-  return typeof (data) === 'string' ? data.replace(')]}\',\n', '') : data;
-}
-
 function sendFn() {
   var self = this,
     adapter = self.getAdapter(),
@@ -575,11 +592,7 @@ function sendFn() {
 
   self.sendCallback();
   self.$injector.get('$http')(httpBatchConfig).then(function (response) {
-    var batchResponses;
-
-    response.data = trimJsonProtectionVulnerability(response.data);
-
-    batchResponses = adapter.parseResponse(self.requests, response, self.config);
+    var batchResponses = adapter.parseResponse(self.requests, response, self.config);
 
     angular.forEach(batchResponses, function (batchResponse) {
       batchResponse.request.callback(

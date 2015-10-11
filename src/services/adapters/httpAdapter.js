@@ -38,7 +38,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
         headers: config.batchRequestHeaders || {}
       },
       batchBody = [],
-      urlInfo, i, request, header;
+      urlInfo, i, request, header, relativeUrlParts, encodedRelativeUrl;
 
     httpConfig.headers[constants.contentType] = 'multipart/mixed; boundary=' + boundary;
 
@@ -61,7 +61,19 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
 
       batchBody.push('Content-Type: application/http; msgtype=request', constants.emptyString);
 
-      batchBody.push(request.method + ' ' + encodeURI(urlInfo.relativeUrl) + ' ' + constants.httpVersion);
+      // angular would have already encoded the parameters *if* the dev passed them in via the params parameter to $http
+      // so we only need to url encode the url not the query string part
+      relativeUrlParts = urlInfo.relativeUrl.split('?');
+      // do a very basic check to see if query strings are encoded as dev might
+      // have just added them to the url and not passed them in via the params config param to $http
+      if (relativeUrlParts.length > 1 && (/%[A-F0-9]{2}/gi).test(relativeUrlParts[1]) === false) {
+        // chances are they are not encoded so encode them
+        encodedRelativeUrl = encodeURI(urlInfo.relativeUrl);
+      } else {
+        encodedRelativeUrl = encodeURI(relativeUrlParts[0]) + (relativeUrlParts.length > 1 ? '?' + relativeUrlParts[1] : '');
+      }
+
+      batchBody.push(request.method + ' ' + encodedRelativeUrl + ' ' + constants.httpVersion);
       batchBody.push('Host: ' + urlInfo.host);
 
       for (header in request.headers) {

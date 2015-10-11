@@ -5,7 +5,7 @@
   "noarg": true,
   "noempty": true,
   "nonew": true,
-  "trailing": true,
+  "trailing": false,
   "maxlen": 512,
   "boss": true,
   "eqnull": false,
