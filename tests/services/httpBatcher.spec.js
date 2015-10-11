@@ -724,6 +724,77 @@
           $httpBackend.flush();
         });
 
+        it('should parse the response of a single batch request which contains the Angular "JSON Vulnerability Protection" prefix and multiple responses', function (done) {
+          var batchConfig = {
+              batchEndpointUrl: 'http://www.someservice.com/batch',
+              batchRequestCollectionDelay: 200,
+              minimumBatchSize: 1,
+              adapter: defaultBatchAdapter
+            },
+            postData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--31fcc127-a593-4e1d-86f3-57e45375848f' +
+            '\r\nContent-Type: application/http; msgtype=request\r\n\r\nGET /resource-two HTTP/1.1\r\nHost: www.gogle.com\r\n\r\n\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--',
+            responseData = '--31fcc127-a593-4e1d-86f3-57e45375848f\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+            'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8;\r\n\r\n' +
+            ')]}\',\n' + // JSON Vulnerability Protection prefix (see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection )
+            '{"results":[{"BusinessDescription":"Some text here"}],"inlineCount":35}' +
+            '\r\n--31fcc127-a593-4e1d-86f3-57e45375848f\r\n' +
+            '\r\nContent-Type: application/http; msgtype=response\r\n\r\n' +
+            'HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8;\r\n\r\n' +
+            ')]}\',\n' + // JSON Vulnerability Protection prefix (see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection )
+            '[{"name":"Jon","id":1,"age":30},{"name":"Laurie","id":2,"age":29}]' +
+            '\r\n--31fcc127-a593-4e1d-86f3-57e45375848f--\r\n',
+
+            completedFnInvocationCount = 0,
+
+            completedFn = function () {
+              completedFnInvocationCount += 1;
+              if (completedFnInvocationCount === 2) {
+                done();
+              }
+            };
+
+          $httpBackend.expectPOST(batchConfig.batchEndpointUrl, postData).respond(200, responseData, {
+            'content-type': 'multipart/mixed; boundary="31fcc127-a593-4e1d-86f3-57e45375848f"'
+          }, 'OK');
+
+          sandbox.stub(httpBatchConfig, 'calculateBoundary').returns('31fcc127-a593-4e1d-86f3-57e45375848f');
+          sandbox.stub(httpBatchConfig, 'getBatchConfig').returns(batchConfig);
+
+          httpBatcher.batchRequest({
+            url: 'http://www.gogle.com/resource',
+            method: 'GET',
+            callback: function (statusCode, data) {
+              expect(data).to.deep.equal({
+                results: [{
+                  BusinessDescription: 'Some text here'
+                }],
+                inlineCount: 35
+              });
+              completedFn();
+            }
+          });
+
+          httpBatcher.batchRequest({
+            url: 'http://www.gogle.com/resource-two',
+            method: 'GET',
+            callback: function (statusCode, data) {
+              expect(data).to.deep.equal([{
+                name: 'Jon',
+                id: 1,
+                age: 30
+              }, {
+                name: 'Laurie',
+                id: 2,
+                age: 29
+              }]);
+              completedFn();
+            }
+          });
+
+          $timeout.flush();
+          $httpBackend.flush();
+        });
+
         it('should return original data for non strings when trim Angular "JSON Vulnerability Protection" prefix', function (done) {
           var responseData = [{
               "headers": {

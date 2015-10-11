@@ -186,11 +186,22 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
     return boundary;
   }
 
+  /**
+   * see https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection
+   * @param data
+   * @returns {*|void|string}
+   */
+  function trimJsonProtectionVulnerability(data) {
+    return typeof (data) === 'string' ? data.replace(')]}\',\n', '') : data;
+  }
+
   function convertDataToCorrectType(contentType, dataStr) {
     var data = dataStr;
     contentType = contentType.toLowerCase();
 
     if (contentType.indexOf('json') > -1) {
+      // only remove json vulnerability prefix if we're parsing json
+      dataStr = trimJsonProtectionVulnerability(dataStr);
       data = angular.fromJson(dataStr);
     }
 
