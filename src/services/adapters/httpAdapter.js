@@ -261,7 +261,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
     }
 
     result.headers[constants.contentType] = result.contentType;
-    return new window.ahb.HttpBatchResponseData(request, result.statusCode, result.statusText, result.data, result.headers);
+    return new global.ahb.HttpBatchResponseData(request, result.statusCode, result.statusText, result.data, result.headers);
   }
 }
 
@@ -271,4 +271,4 @@ HttpBatchAdapter.$inject = [
   'httpBatchConfig'
 ];
 
-angular.module(window.ahb.name).service('httpBatchAdapter', HttpBatchAdapter);
+angular.module(global.ahb.name).service('httpBatchAdapter', HttpBatchAdapter);

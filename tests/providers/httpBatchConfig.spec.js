@@ -3,7 +3,7 @@
   describe('httpBatchConfig', function () {
     var sandbox, httpBatchConfig;
 
-    beforeEach(module(window.ahb.name));
+    beforeEach(module(global.ahb.name));
 
     describe('httpBatchConfig', function () {
       beforeEach(inject(function ($injector) {

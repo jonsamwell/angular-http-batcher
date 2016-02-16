@@ -18,7 +18,7 @@
   "indent": 2,
   "globals": {
     "document": true,
-    "window": true,
+    "global": true,
     "angular": true,
     "sinon": true,
     "module": true,

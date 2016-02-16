@@ -4,7 +4,7 @@
   describe('nodeJsMultiFetchAdapter', function () {
     var sandbox, adapter;
 
-    beforeEach(module(window.ahb.name));
+    beforeEach(module(global.ahb.name));
 
     describe('nodeJsMultiFetchAdapter', function () {
       beforeEach(inject(function ($injector) {

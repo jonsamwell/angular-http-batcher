@@ -4,7 +4,7 @@
   describe('httpBackend decorator', function () {
     var sandbox, $httpBackend, httpBatcher;
 
-    beforeEach(module(window.ahb.name));
+    beforeEach(module(global.ahb.name));
 
     describe('ngModelDirective', function () {
       beforeEach(inject(function ($injector) {

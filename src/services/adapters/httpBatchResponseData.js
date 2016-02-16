@@ -15,4 +15,4 @@ function HttpBatchResponseData(request, statusCode, statusText, data, headers) {
   this.headers = headers;
 }
 
-window.ahb.HttpBatchResponseData = HttpBatchResponseData;
+global.ahb.HttpBatchResponseData = HttpBatchResponseData;

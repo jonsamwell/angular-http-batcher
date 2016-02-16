@@ -62,7 +62,7 @@ function NodeJsMultiFetchAdapter() {
       request = requests[i];
       dataPart = responseData[i.toString()];
 
-      batchResponses.push(new window.ahb.HttpBatchResponseData(
+      batchResponses.push(new global.ahb.HttpBatchResponseData(
         request,
         dataPart.statusCode,
         '',
@@ -83,4 +83,4 @@ function NodeJsMultiFetchAdapter() {
   }
 }
 
-angular.module(window.ahb.name).service('nodeJsMultiFetchAdapter', NodeJsMultiFetchAdapter);
+angular.module(global.ahb.name).service('nodeJsMultiFetchAdapter', NodeJsMultiFetchAdapter);
