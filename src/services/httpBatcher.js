@@ -72,6 +72,11 @@ function BatchRequestManager($injector, $timeout, adapters, config, sendCallback
   this.sendCallback = sendCallback;
   this.requests = [];
 
+  var adapter = this.getAdapter();
+  if (adapter.hasOwnProperty('send')) {
+    this.sendCallback = this.adapter.send;
+  }
+
   this.currentTimeoutToken = $timeout(function () {
     self.currentTimeoutToken = undefined;
     if (self.requests.length < self.config.minimumBatchSize) {
