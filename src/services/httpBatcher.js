@@ -36,8 +36,12 @@ function addRequestFn(request) {
 
 function sendFn() {
   var self = this,
-    adapter = self.getAdapter(),
-    httpBatchConfig = adapter.buildRequest(self.requests, self.config);
+    adapter = self.getAdapter();
+  if (adapter.hasOwnProperty('send')) {
+    return adapter.send.apply(this);
+  }
+
+  var httpBatchConfig = adapter.buildRequest(self.requests, self.config);
 
   self.sendCallback();
   self.$injector.get('$http')(httpBatchConfig).then(function (response) {
@@ -71,11 +75,6 @@ function BatchRequestManager($injector, $timeout, adapters, config, sendCallback
   this.config = config;
   this.sendCallback = sendCallback;
   this.requests = [];
-
-  var adapter = this.getAdapter();
-  if (adapter.hasOwnProperty('send')) {
-    this.sendCallback = this.adapter.send;
-  }
 
   this.currentTimeoutToken = $timeout(function () {
     self.currentTimeoutToken = undefined;
