@@ -1,3 +1,6 @@
+The Angular 2+ version of this project can be found here https://github.com/jonsamwell/ngx-http-batcher
+
+
 Angular Http Batcher - enabling transparent HTTP batch request with AngularJS
 ====================
 
