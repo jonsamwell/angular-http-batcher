@@ -8,8 +8,6 @@ The biggest performance boost you will get with modern single page style apps is
 send.  This module has been designed to batch http requests to the same endpoint following the http 1.1 batch spec and after the
 1.11.0 update it can now support serialising to any number of batch formats and I'm planning to implement that Facebook batch protocol very soon.  All you need to do is configure the batch endpoint with the library and the rest is taken care of!
 
-See my original blog post for a detailed overview - http://jonsamwell.com/batching-http-requests-in-angular/
-
 <h3 id="angular-http-batcher-getting-started">Getting Started</h3>
 
 Install the module via bower or download the latest [distribution](https://github.com/jonsamwell/angular-http-batcher/blob/master/dist/angular-http-batch.min.js) from github.
