@@ -1,7 +1,7 @@
 /*
- * angular-http-batcher - v1.12.0 - 2015-10-12
+ * angular-http-batcher - v1.12.0 - 2017-02-15
  * https://github.com/jonsamwell/angular-http-batcher
- * Copyright (c) 2015 Jon Samwell
+ * Copyright (c) 2017 Jon Samwell
  */
 (function (window, angular) {
     'use strict';
@@ -260,7 +260,14 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       // angular would have already encoded the parameters *if* the dev passed them in via the params parameter to $http
       // so we only need to url encode the url not the query string part
       relativeUrlParts = urlInfo.relativeUrl.split('?');
-      encodedRelativeUrl = encodeURI(relativeUrlParts[0]) + (relativeUrlParts.length > 1 ? '?' + relativeUrlParts[1] : '');
+      // do a very basic check to see if query strings are encoded as dev might
+      // have just added them to the url and not passed them in via the params config param to $http
+      if (relativeUrlParts.length > 1 && (/%[A-F0-9]{2}/gi).test(relativeUrlParts[1]) === false) {
+        // chances are they are not encoded so encode them
+        encodedRelativeUrl = encodeURI(urlInfo.relativeUrl);
+      } else {
+        encodedRelativeUrl = encodeURI(relativeUrlParts[0]) + (relativeUrlParts.length > 1 ? '?' + relativeUrlParts[1] : '');
+      }
 
       batchBody.push(request.method + ' ' + encodedRelativeUrl + ' ' + constants.httpVersion);
       batchBody.push('Host: ' + urlInfo.host);
@@ -587,8 +594,12 @@ function addRequestFn(request) {
 
 function sendFn() {
   var self = this,
-    adapter = self.getAdapter(),
-    httpBatchConfig = adapter.buildRequest(self.requests, self.config);
+    adapter = self.getAdapter();
+  if (adapter.hasOwnProperty('send')) {
+    return adapter.send.apply(this);
+  }
+
+  var httpBatchConfig = adapter.buildRequest(self.requests, self.config);
 
   self.sendCallback();
   self.$injector.get('$http')(httpBatchConfig).then(function (response) {
