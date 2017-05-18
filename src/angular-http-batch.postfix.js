@@ -1,1 +1,1 @@
-}(window, angular));
+}(angular));

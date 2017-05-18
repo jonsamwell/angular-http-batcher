@@ -152,4 +152,4 @@ function HttpBatchConfigFn() {
   ];
 }
 
-angular.module(window.ahb.name).provider('httpBatchConfig', HttpBatchConfigFn);
+angular.module(global.ahb.name).provider('httpBatchConfig', HttpBatchConfigFn);

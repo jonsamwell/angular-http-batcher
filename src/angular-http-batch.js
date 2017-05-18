@@ -1,5 +1,7 @@
-window.ahb = {
-  name: 'jcs.angular-http-batch'
+var global = {
+  ahb: {
+    name: 'jcs.angular-http-batch'
+  }
 };
 
 /**
@@ -9,4 +11,4 @@ window.ahb = {
  * @description
  * The main module which holds everything together.
  */
-angular.module(window.ahb.name, []);
+angular.module(global.ahb.name, []);

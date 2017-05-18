@@ -47,4 +47,4 @@ ProviderDecoratorFn.$inject = [
   '$provide'
 ];
 
-angular.module(window.ahb.name).config(ProviderDecoratorFn);
+angular.module(global.ahb.name).config(ProviderDecoratorFn);

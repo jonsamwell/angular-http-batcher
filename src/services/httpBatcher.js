@@ -142,4 +142,4 @@ HttpBatcherFn.$inject = [
   'nodeJsMultiFetchAdapter'
 ];
 
-angular.module(window.ahb.name).service('httpBatcher', HttpBatcherFn);
+angular.module(global.ahb.name).service('httpBatcher', HttpBatcherFn);

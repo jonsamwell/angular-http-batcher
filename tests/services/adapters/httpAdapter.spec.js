@@ -5,7 +5,7 @@
     var sandbox, httpBatchConfig, httpAdapter,
       boundaryText = 'boundary123';
 
-    beforeEach(module(window.ahb.name));
+    beforeEach(module(global.ahb.name));
 
     describe('httpAdapter', function () {
       beforeEach(inject(function ($injector) {
@@ -198,7 +198,7 @@
           expect(result.headers['Content-Type']).to.equal('multipart/mixed; boundary=boundary123');
           expect(result.headers['Content-disposition']).to.equal('form-data');
           expect(result.data).to.equal('--boundary123\r\nContent-disposition: form-data; name=veryUniqueRequestName0\r\nContent-Type: application/http; msgtype=request\r\n\r\n' +
-            'GET api/some%20method?params=123&some%20filter=abc%3D1 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
+            'GET api/some%20method?params=123&some%20filter=1 HTTP/1.1\r\nHost: localhost:9876\r\n\r\n\r\n--boundary123--');
         });
 
         it('should not double encode query string parameters but encode url', function () {

@@ -25,7 +25,7 @@
 <script src="../src/config/httpBackendDecorator.js"></script>
 
 <script type="text/javascript">
-    var app = angular.module('httpBatchExample', ['ngResource', window.ahb.name]);
+    var app = angular.module('httpBatchExample', ['ngResource', global.ahb.name]);
 
     app.config(['$httpProvider', function($httpProvider) {
         $httpProvider.defaults.withCredentials = true;

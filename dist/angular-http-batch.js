@@ -1,13 +1,15 @@
 /*
- * angular-http-batcher - v1.12.0 - 2015-10-12
+ * angular-http-batcher - v1.12.0 - 2016-02-16
  * https://github.com/jonsamwell/angular-http-batcher
- * Copyright (c) 2015 Jon Samwell
+ * Copyright (c) 2016 Jon Samwell
  */
-(function (window, angular) {
+(function (angular) {
     'use strict';
 
-window.ahb = {
-  name: 'jcs.angular-http-batch'
+var global = {
+  ahb: {
+    name: 'jcs.angular-http-batch'
+  }
 };
 
 /**
@@ -17,7 +19,7 @@ window.ahb = {
  * @description
  * The main module which holds everything together.
  */
-angular.module(window.ahb.name, []);
+angular.module(global.ahb.name, []);
 
 function HttpBatchConfigFn() {
   var allowedBatchDomains = [],
@@ -173,7 +175,7 @@ function HttpBatchConfigFn() {
   ];
 }
 
-angular.module(window.ahb.name).provider('httpBatchConfig', HttpBatchConfigFn);
+angular.module(global.ahb.name).provider('httpBatchConfig', HttpBatchConfigFn);
 
 /**
  *
@@ -192,7 +194,7 @@ function HttpBatchResponseData(request, statusCode, statusText, data, headers) {
   this.headers = headers;
 }
 
-window.ahb.HttpBatchResponseData = HttpBatchResponseData;
+global.ahb.HttpBatchResponseData = HttpBatchResponseData;
 
 function HttpBatchAdapter($document, $window, httpBatchConfig) {
   var self = this,
@@ -260,7 +262,14 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
       // angular would have already encoded the parameters *if* the dev passed them in via the params parameter to $http
       // so we only need to url encode the url not the query string part
       relativeUrlParts = urlInfo.relativeUrl.split('?');
-      encodedRelativeUrl = encodeURI(relativeUrlParts[0]) + (relativeUrlParts.length > 1 ? '?' + relativeUrlParts[1] : '');
+      // do a very basic check to see if query strings are encoded as dev might
+      // have just added them to the url and not passed them in via the params config param to $http
+      if (relativeUrlParts.length > 1 && (/%[A-F0-9]{2}/gi).test(relativeUrlParts[1]) === false) {
+        // chances are they are not encoded so encode them
+        encodedRelativeUrl = encodeURI(urlInfo.relativeUrl);
+      } else {
+        encodedRelativeUrl = encodeURI(relativeUrlParts[0]) + (relativeUrlParts.length > 1 ? '?' + relativeUrlParts[1] : '');
+      }
 
       batchBody.push(request.method + ' ' + encodedRelativeUrl + ' ' + constants.httpVersion);
       batchBody.push('Host: ' + urlInfo.host);
@@ -450,7 +459,7 @@ function HttpBatchAdapter($document, $window, httpBatchConfig) {
     }
 
     result.headers[constants.contentType] = result.contentType;
-    return new window.ahb.HttpBatchResponseData(request, result.statusCode, result.statusText, result.data, result.headers);
+    return new global.ahb.HttpBatchResponseData(request, result.statusCode, result.statusText, result.data, result.headers);
   }
 }
 
@@ -460,7 +469,7 @@ HttpBatchAdapter.$inject = [
   'httpBatchConfig'
 ];
 
-angular.module(window.ahb.name).service('httpBatchAdapter', HttpBatchAdapter);
+angular.module(global.ahb.name).service('httpBatchAdapter', HttpBatchAdapter);
 
 function NodeJsMultiFetchAdapter() {
   var self = this;
@@ -526,7 +535,7 @@ function NodeJsMultiFetchAdapter() {
       request = requests[i];
       dataPart = responseData[i.toString()];
 
-      batchResponses.push(new window.ahb.HttpBatchResponseData(
+      batchResponses.push(new global.ahb.HttpBatchResponseData(
         request,
         dataPart.statusCode,
         '',
@@ -547,7 +556,7 @@ function NodeJsMultiFetchAdapter() {
   }
 }
 
-angular.module(window.ahb.name).service('nodeJsMultiFetchAdapter', NodeJsMultiFetchAdapter);
+angular.module(global.ahb.name).service('nodeJsMultiFetchAdapter', NodeJsMultiFetchAdapter);
 
 function convertHeadersToString(headers) {
   var property,
@@ -693,7 +702,7 @@ HttpBatcherFn.$inject = [
   'nodeJsMultiFetchAdapter'
 ];
 
-angular.module(window.ahb.name).service('httpBatcher', HttpBatcherFn);
+angular.module(global.ahb.name).service('httpBatcher', HttpBatcherFn);
 
 function HttpBackendDecorator($delegate, httpBatcher) {
   var $httpBackendFn = function (method, url, post, callback, headers, timeout, withCredentials, responseType) {
@@ -744,6 +753,6 @@ ProviderDecoratorFn.$inject = [
   '$provide'
 ];
 
-angular.module(window.ahb.name).config(ProviderDecoratorFn);
+angular.module(global.ahb.name).config(ProviderDecoratorFn);
 
-}(window, angular));
+}(angular));

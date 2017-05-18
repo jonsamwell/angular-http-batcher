@@ -38,7 +38,7 @@
     beforeEach(module(function ($provide) {
       $provide.value('$window', $window);
     }));
-    beforeEach(module(window.ahb.name));
+    beforeEach(module(global.ahb.name));
 
     describe('httpBatcher', function () {
       beforeEach(inject(function ($injector) {
