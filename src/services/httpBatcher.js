@@ -92,12 +92,13 @@ BatchRequestManager.prototype.send = sendFn;
 BatchRequestManager.prototype.addRequest = addRequestFn;
 BatchRequestManager.prototype.flush = flushFn;
 
-function HttpBatcherFn($injector, $timeout, httpBatchConfig, httpBatchAdapter, nodeJsMultiFetchAdapter) {
+function HttpBatcherFn($injector, $timeout, httpBatchConfig, httpBatchAdapter, nodeJsMultiFetchAdapter, npmBatchRequestAdapter) {
   var self = this,
     currentBatchedRequests = {},
     adapters = {
-      httpBatchAdapter: httpBatchAdapter,
-      nodeJsMultiFetchAdapter: nodeJsMultiFetchAdapter
+      httpBatchAdapter:         httpBatchAdapter,
+      nodeJsMultiFetchAdapter:  nodeJsMultiFetchAdapter,
+      npmBatchRequestAdapter:   npmBatchRequestAdapter
     };
 
   self.canBatchRequest = canBatchRequestFn;
