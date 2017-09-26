@@ -73,10 +73,9 @@ shared.files = [
     'src/angular-http-batch.js',
     'src/providers/httpBatchConfig.js',
     'src/services/httpBatcher.js',
-    'src/services/adapters/httpBatchResponseData.js',
-    'src/services/adapters/httpAdapter.js',
-    'src/services/adapters/nodeJsMultiFetchAdapter.js',
-    'src/config/httpBackendDecorator.js'
+    'src/services/adapters/*.js',
+    'src/config/httpBackendDecorator.js',
+    './node_modules/phantomjs-polyfill/bind-polyfill.js'
 ];
 
 module.exports = shared;

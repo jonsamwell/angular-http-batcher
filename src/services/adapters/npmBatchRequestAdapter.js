@@ -23,8 +23,6 @@
   function transformGETRequest(requestIndex, request, httpConfig) {
     var paramSerializer;
 
-    httpConfig.data = httpConfig.data || {};
-
     httpConfig.data[requestIndex] = {
       method:   request.method,
       uri:      request.url,
@@ -41,8 +39,6 @@
    * @param httpConfig (Object) - the Angular $http config Object for the batched request
    */
   function transformRequestWithBody(requestIndex, request, httpConfig) {
-    httpConfig.data = httpConfig.data || {};
-
     httpConfig.data[requestIndex] = {
       method:   request.method,
       uri:      request.url,
@@ -69,7 +65,8 @@
     var httpConfig = {
       method:   'POST',
       url:      config.batchEndpointUrl,
-      headers:  config.batchRequestHeaders || {}
+      headers:  config.batchRequestHeaders || {},
+      data:     {}
     };
 
     for(requestIndex = 0; requestIndex < requests.length; requestIndex++) {
@@ -84,6 +81,8 @@
 
       transformRequest(requestIndex, requests[requestIndex], httpConfig);
     }
+
+    return httpConfig;
   };
 
   /**
@@ -102,7 +101,7 @@
     var batchResponses = [];
     var response;
 
-    for(requestIndex = requests.length - 1; requestIndex >= 0; requestIndex--) {
+    for(requestIndex = 0; requestIndex < requests.length; requestIndex++) {
       response = rawResponse.data[requestIndex];
 
       batchResponses.push(new HttpBatchResponseData(

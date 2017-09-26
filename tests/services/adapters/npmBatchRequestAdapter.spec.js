@@ -2,6 +2,8 @@
   'use strict';
 
   describe('npmBatchRequestAdapter', function() {
+    beforeEach(module(window.ahb.name));
+
     beforeEach(inject(function($injector) {
       this.adapter = $injector.get('npmBatchRequestAdapter');
       this.sandbox = sinon.sandbox.create();
@@ -39,13 +41,18 @@
           for(requestIndex = 0; requestIndex < requests.length; requestIndex++) {
             requestData = batchRequest.data[requestIndex];
 
-            expect(requestData).to.have.all.keys('method', 'uri', 'headers');
+            expect(requestData).to.include.keys('method', 'uri');
             expect(requestData.method).to.equal(requests[requestIndex].method);
             expect(requestData.uri).to.equal(requests[requestIndex].url);
-            expect(requestData.headers).to.deep.equal(requests[requestIndex].headers);
+
+            if(requestData.headers) {
+              expect(requestData).to.include.keys('headers');
+
+              expect(requestData.headers).to.deep.equal(requests[requestIndex].headers);
+            };
 
             if(requestData.method !== 'GET') {
-              expect(requestData).to.have.all.keys('body');
+              expect(requestData).to.include.keys('body');
 
               expect(requestData.body).to.deep.equal(requests[requestIndex].data);
             }
@@ -194,7 +201,7 @@
 
       it('should parse multiple responses and multiplex them appropriately', function() {
         var requests;
-        var responses;
+        var response;
         var parsedResponses;
 
         requests = [{
@@ -208,7 +215,7 @@
           }
         }];
 
-        responses = {
+        response = {
           data: {
             0:    {
               statusCode: 200,
@@ -231,12 +238,12 @@
           }
         };
 
-        parsedResponses = this.adapter.parseResponse([request], response);
+        parsedResponses = this.adapter.parseResponse(requests, response);
 
         expect(parsedResponses).to.be.an('array').with.lengthOf(2);
 
-        this.testResponse(request, response.data[0], parsedResponses[0]);
-        this.testResponse(request, response.data[1], parsedResponses[1]);
+        this.testResponse(requests[0], response.data[0], parsedResponses[0]);
+        this.testResponse(requests[1], response.data[1], parsedResponses[1]);
       });
     });
   });
