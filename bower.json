@@ -35,7 +35,8 @@
   "devDependencies": {
     "sinon": "~1.10.3",
     "angular-mocks": ">=1.2.23",
-    "angular-resource": ">=1.2.23"
+    "angular-resource": ">=1.2.23",
+    "angular-route":  ">=1.2.23"
   },
   "dependencies": {
     "angular": ">= 1.2.23"
